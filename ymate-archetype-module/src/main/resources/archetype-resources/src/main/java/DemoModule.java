@@ -1,6 +1,6 @@
-#set( $symbol_pound = '#' )
-#set( $symbol_dollar = '$' )
-#set( $symbol_escape = '\' )
+#set($symbol_pound='#')
+#set($symbol_dollar='$')
+#set($symbol_escape='\' )
 package ${package};
 
 import ${package}.impl.DefaultDemoModuleCfg;
@@ -71,6 +71,10 @@ public class DemoModule implements IModule, IDemoModule {
             __moduleCfg = null;
             __owner = null;
         }
+    }
+
+    public YMP getOwner() {
+        return __owner;
     }
 
     public IDemoModuleCfg getModuleCfg() {
