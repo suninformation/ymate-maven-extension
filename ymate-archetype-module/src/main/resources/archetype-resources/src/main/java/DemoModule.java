@@ -44,6 +44,10 @@ public class DemoModule implements IModule, IDemoModule {
         return owner.getModule(DemoModule.class);
     }
 
+    public String getName() {
+        return IDemoModule.MODULE_NAME;
+    }
+
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
