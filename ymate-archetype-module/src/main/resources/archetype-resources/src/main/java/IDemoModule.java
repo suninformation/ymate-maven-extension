@@ -10,11 +10,11 @@ import net.ymate.platform.core.YMP;
  */
 public interface IDemoModule {
 
-    public static final String MODULE_NAME = "demomodule";
+    String MODULE_NAME = "demomodule";
 
-    public YMP getOwner();
+    YMP getOwner();
 
-    public IDemoModuleCfg getModuleCfg();
+    IDemoModuleCfg getModuleCfg();
 
-    public void sayHi(String youName);
+    void sayHi(String youName);
 }

@@ -23,9 +23,7 @@
             <AppenderRef ref="custom-logname"/>
         </Logger>
         -->
-        <!-- 配置记录器级别 -->
         <Root level="debug">
-            <!-- 输出设置 -->
             <AppenderRef ref="default"/>
         </Root>
     </Loggers>

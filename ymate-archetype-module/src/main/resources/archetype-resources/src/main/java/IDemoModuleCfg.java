@@ -8,7 +8,7 @@ package ${package};
  */
 public interface IDemoModuleCfg {
 
-    public String getModuleParamOne();
+    String getModuleParamOne();
 
-    public String getModuleParamTwo();
+    String getModuleParamTwo();
 }

@@ -12,10 +12,11 @@
     <description>YMP Maven Extension.</description>
 
     <modules>
-        <module>maven-ymate-plugin</module>
         <module>ymate-archetype-quickstart</module>
         <module>ymate-archetype-webapp</module>
         <module>ymate-archetype-module</module>
+        <module>ymate-archetype-serv</module>
+        <module>ymate-maven-plugin</module>
     </modules>
 
     <developers>
