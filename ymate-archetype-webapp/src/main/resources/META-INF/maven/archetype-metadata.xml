@@ -30,6 +30,7 @@
             <directory>src/main/webapp</directory>
             <includes>
                 <include>**/*.log</include>
+                <include>**/*.tmpl</include>
             </includes>
         </fileSet>
     </fileSets>
