@@ -16,7 +16,9 @@
 package net.ymate.maven.plugins;
 
 import net.ymate.platform.core.util.RuntimeUtils;
+import org.apache.commons.io.FileExistsException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -104,11 +106,11 @@ public class TomcatMojo extends AbstractTmplMojo {
     private void __doCheckFiles() throws Exception {
         File _file = new File(catalinaHome);
         if (!_file.exists() || !_file.isDirectory()) {
-            throw new IllegalArgumentException("catalinaHome Illegal");
+            throw new IllegalArgumentException("'catalinaHome' invalid, not exist or not a directory");
         }
         _file = new File(catalinaBase);
         if (!_file.exists() || !_file.isDirectory()) {
-            throw new IllegalArgumentException("catalinaBase Illegal");
+            throw new IllegalArgumentException("'catalinaBase' invalid, not exist or not a directory");
         }
         for (String _fileName : __NEED_COPY_FILES) {
             File _tmpFile = new File(this.catalinaHome, _fileName);
@@ -130,10 +132,14 @@ public class TomcatMojo extends AbstractTmplMojo {
         for (String _fileName : __NEED_COPY_FILES) {
             FileUtils.copyFile(new File(catalinaHome, _fileName), new File(parent, _fileName));
         }
-        if (tomcatVersion == 8)
+        if (tomcatVersion == 8) {
             for (String _fileName : __V8_COPY_FILES) {
-                FileUtils.copyFile(new File(catalinaHome, _fileName), new File(parent, _fileName));
+                File _targetFile = new File(catalinaHome, _fileName);
+                if (_targetFile.exists() && _targetFile.isFile()) {
+                    FileUtils.copyFile(_targetFile, new File(parent, _fileName));
+                }
             }
+        }
     }
 
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -141,6 +147,9 @@ public class TomcatMojo extends AbstractTmplMojo {
             __doCheckFiles();
             //
             File _parent = new File(catalinaBase, serviceName);
+            if (_parent.exists() && !overwrite) {
+                throw new FileExistsException(_parent);
+            }
             __doMakeDirs(_parent);
             //
             Map<String, Object> _prop = new HashMap<String, Object>();
@@ -148,9 +157,24 @@ public class TomcatMojo extends AbstractTmplMojo {
             _prop.put("catalina_base", _parent.getPath());
             if (tomcatVersion <= 0) {
                 tomcatVersion = 7;
+            } else if (tomcatVersion < 6 || tomcatVersion > 8) {
+                throw new IllegalArgumentException("'tomcatVersion' invalid, only supports 6, 7, 8");
             }
-            //
-            __doCopyConfFiles(_parent);
+            hostName = StringUtils.trimToEmpty(hostName);
+            hostAlias = StringUtils.trimToEmpty(hostAlias);
+            if (serverPort <= 0) {
+                throw new IllegalArgumentException("'serverPort' invalid, must be gt 0");
+            }
+            if (connectorPort <= 0) {
+                throw new IllegalArgumentException("'connectorPort' invalid, must be gt 0");
+            }
+            if (redirectPort <= 0) {
+                throw new IllegalArgumentException("'redirectPort' invalid, must be gt 0");
+            }
+            ajpHost = StringUtils.defaultIfBlank(ajpHost, "localhost");
+            if (ajpPort <= 0) {
+                throw new IllegalArgumentException("'ajpPort' invalid, must be gt 0");
+            }
             //
             _prop.put("tomcat_version", Integer.toString(tomcatVersion));
             _prop.put("host_name", hostName);
@@ -174,6 +198,8 @@ public class TomcatMojo extends AbstractTmplMojo {
             getLog().info("\t|--RedirectPort:" + redirectPort);
             getLog().info("\t|--AjpHost:" + ajpHost);
             getLog().info("\t|--AjpPort:" + ajpPort);
+            //
+            __doCopyConfFiles(_parent);
             //
             __doWriterTargetFile(_parent.getPath(), "conf/server.xml", "/tomcat/v" + tomcatVersion + "/server-xml.ftl", _prop);
             __doWriterTargetFile(_parent.getPath(), "vhost.conf", "/tomcat/vhost-conf.ftl", _prop);

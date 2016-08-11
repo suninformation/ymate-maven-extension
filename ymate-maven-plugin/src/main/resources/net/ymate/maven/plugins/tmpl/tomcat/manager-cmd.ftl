@@ -10,5 +10,5 @@ echo Manage/Configuration tomcat%TOMCAT_VERSION%%SERVICE_NAME% service...
 echo ---------------------------------------------------------
 
 call %CATALINA_HOME%\bin\tomcat%TOMCAT_VERSION%w.exe //MS//tomcat%TOMCAT_VERSION%%SERVICE_NAME%
-d
+
 pause
