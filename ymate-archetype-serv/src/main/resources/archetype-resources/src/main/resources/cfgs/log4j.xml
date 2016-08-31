@@ -4,27 +4,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
     <Appenders>
-        <RollingRandomAccessFileAppender name="default"
-                                         fileName="${symbol_dollar}{sys:LOG_OUT_DIR}/default.log"
-                                         filePattern="${symbol_dollar}{sys:LOG_OUT_DIR}/default-%d{yyMMddHHmm}-%i.log">
+        <RollingRandomAccessFile name="default"
+                                 fileName="${symbol_dollar}{sys:LOG_OUT_DIR}/default.log"
+                                 filePattern="${symbol_dollar}{sys:LOG_OUT_DIR}/${symbol_dollar}${symbol_dollar}{date:yyyyMMdd}/default-%d{yyMMddHH}-%i.log">
             <PatternLayout pattern="%m %n" charset="UTF-8"/>
             <Policies>
                 <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
                 <SizeBasedTriggeringPolicy size="200 MB"/>
             </Policies>
             <DefaultRolloverStrategy max="100"/>
-        </RollingRandomAccessFileAppender>
+        </RollingRandomAccessFile>
         <!--
-        <RollingRandomAccessFileAppender name="custom-logname"
-                                         fileName="${symbol_dollar}{sys:LOG_OUT_DIR}/custom-logname.log"
-                                         filePattern="${symbol_dollar}{sys:LOG_OUT_DIR}/custom-logname-%d{yyMMddHH}-%i.log">
+        <RollingRandomAccessFile name="custom-logname"
+                                 fileName="${symbol_dollar}{sys:LOG_OUT_DIR}/custom-logname.log"
+                                 filePattern="${symbol_dollar}{sys:LOG_OUT_DIR}/${symbol_dollar}${symbol_dollar}{date:yyyyMMdd}/custom-logname-%d{yyMMddHH}-%i.log">
             <PatternLayout pattern="%m %n" charset="UTF-8"/>
             <Policies>
                 <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
                 <SizeBasedTriggeringPolicy size="200 MB"/>
             </Policies>
             <DefaultRolloverStrategy max="100"/>
-        </RollingRandomAccessFileAppender>
+        </RollingRandomAccessFile>
         -->
     </Appenders>
     <Loggers>
