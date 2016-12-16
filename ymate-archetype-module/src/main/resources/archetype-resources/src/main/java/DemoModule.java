@@ -21,7 +21,7 @@ public class DemoModule implements IModule, IDemoModule {
 
     public static final Version VERSION = new Version(1, 0, 0, DemoModule.class.getPackage().getImplementationVersion(), Version.VersionType.Alphal);
 
-    private static IDemoModule __instance;
+    private static volatile IDemoModule __instance;
 
     private YMP __owner;
 
