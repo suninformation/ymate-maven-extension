@@ -22,6 +22,7 @@ import net.ymate.platform.persistence.jdbc.scaffold.EntityGenerator;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +34,9 @@ import java.util.Properties;
  */
 @Mojo(name = "entity")
 public class EntityMojo extends AbstractTmplMojo {
+
+    @Parameter(property = "view")
+    private boolean view;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         YMP _owner = null;
@@ -51,7 +55,7 @@ public class EntityMojo extends AbstractTmplMojo {
                 //
                 _owner = new YMP(ConfigBuilder.create(_props).build()).init();
                 //
-                new EntityGenerator(_owner).createEntityClassFiles();
+                new EntityGenerator(_owner).createEntityClassFiles(view);
             }
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
