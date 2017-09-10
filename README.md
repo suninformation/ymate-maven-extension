@@ -40,13 +40,15 @@
 屏幕输出：
 
     Choose archetype:
-    1: local -> net.ymate.maven.archetypes:ymate-archetype-quickstart (YMP Quickstart Archetype.)
-    2: local -> net.ymate.maven.archetypes:ymate-archetype-webapp (YMP Webapp Archetype.)
-    3: local -> net.ymate.maven.archetypes:ymate-archetype-module (YMP Module Archetype.)
-    4: local -> net.ymate.maven.archetypes:ymate-archetype-serv (YMP Serv Archetype.)
+    1: local -> net.ymate.maven.archetypes:ymate-archetype-module (module)
+    2: local -> net.ymate.maven.archetypes:ymate-archetype-quickstart (quickstart)
+    3: local -> net.ymate.maven.archetypes:ymate-archetype-serv (serv)
+    4: local -> net.ymate.maven.archetypes:ymate-archetype-webapp (webapp)
     Choose a number or apply filter (format: [groupId:]artifactId, case sensitive contains): :
 
-步骤2：根据实际需求选择项目模板类型，这里我选择：2
+> 注：若执行命令没有显示上述内容，请执行`mvn archetype:crawl`命令后再试！
+
+步骤2：根据实际需求选择项目模板类型，这里我选择：4
 
 屏幕输出，接下来要按屏幕提示进行设置：
 
