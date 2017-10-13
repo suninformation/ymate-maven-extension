@@ -43,7 +43,7 @@ public class ControllerMojo extends AbstractTmplMojo {
     /**
      * 控制器存放的包名称
      */
-    @Parameter(property = "package", defaultValue = "${project.groupId}.controllers")
+    @Parameter(property = "package", defaultValue = "${project.groupId}.controller")
     private String packageName;
 
     /**
@@ -126,18 +126,6 @@ public class ControllerMojo extends AbstractTmplMojo {
         }
         //
         File _path = new File(basedir + "/src/main/java", packageName.replace(".", "/"));
-        String _targetFileName = StringUtils.capitalize(_controllerName.concat(".java"));
-        File _targetFile = new File(_path, _targetFileName);
-        if (!_targetFile.exists() || (_targetFile.exists() && overwrite)) {
-            try {
-                if (_path.exists() || _path.mkdirs()) {
-                    __doWriterTargetFile(_path.getPath(), _targetFileName, "controller-tmpl", _props);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            getLog().warn("Skip existing file " + _targetFile);
-        }
+        __doWriteSingleFile(new File(_path, StringUtils.capitalize(_controllerName.concat(".java"))), "controller-tmpl", _props);
     }
 }

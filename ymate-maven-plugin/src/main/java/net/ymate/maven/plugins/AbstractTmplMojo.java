@@ -41,6 +41,9 @@ public abstract class AbstractTmplMojo extends AbstractMojo {
     @Parameter(defaultValue = "${basedir}")
     protected String basedir;
 
+    @Parameter(defaultValue = "${project.groupId}")
+    protected String packageBase;
+
     /**
      * 是否覆盖已存在的文件
      */
@@ -83,6 +86,21 @@ public abstract class AbstractTmplMojo extends AbstractMojo {
                 _outWriter.flush();
                 _outWriter.close();
             }
+        }
+    }
+
+    protected void __doWriteSingleFile(File targetFile, String tmplFile, Map<String, Object> properties) {
+        if (!targetFile.exists() || (targetFile.exists() && overwrite)) {
+            try {
+                File _parent = targetFile.getParentFile();
+                if (_parent.exists() || _parent.mkdirs()) {
+                    __doWriterTargetFile(_parent.getPath(), targetFile.getName(), tmplFile, properties);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            getLog().warn("Skip existing file " + targetFile);
         }
     }
 }

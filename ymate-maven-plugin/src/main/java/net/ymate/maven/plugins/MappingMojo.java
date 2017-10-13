@@ -49,7 +49,7 @@ public class MappingMojo extends AbstractTmplMojo {
     /**
      * 控制器存放的包名称
      */
-    @Parameter(property = "package", defaultValue = "${project.groupId}.controllers")
+    @Parameter(property = "package", defaultValue = "${project.groupId}.controller")
     private String packageName;
 
     /**
