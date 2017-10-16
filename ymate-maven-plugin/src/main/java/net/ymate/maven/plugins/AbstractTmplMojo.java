@@ -44,6 +44,12 @@ public abstract class AbstractTmplMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.groupId}")
     protected String packageBase;
 
+    @Parameter(defaultValue = "${project.artifactId}")
+    protected String projectName;
+
+    @Parameter(defaultValue = "${project.version}")
+    protected String version;
+
     /**
      * 是否覆盖已存在的文件
      */
