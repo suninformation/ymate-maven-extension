@@ -250,6 +250,7 @@ public class CrudMojo extends AbstractTmplMojo {
             __attrs.put("required", config.getBooleanValue("required"));
             __attrs.put("filter", config.getBooleanValue("filter"));
             __attrs.put("like", config.getBooleanValue("like"));
+            __attrs.put("description", StringUtils.trimToEmpty(config.getString("description")));
         }
 
         public Map<String, Object> toMap() {

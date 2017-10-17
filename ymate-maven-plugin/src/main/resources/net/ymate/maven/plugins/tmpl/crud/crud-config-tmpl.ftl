@@ -21,7 +21,8 @@
                 "type": "string",
                 "max": 0,
                 "min": 0,
-                "numeric": false
+                "numeric": false,
+                "description": ""
             },
             "params": [
                 {
@@ -36,7 +37,8 @@
                     "regex": "",
                     "required": true,
                     "filter": true,
-                    "like": false
+                    "like": false,
+                    "description": ""
                 }
             ]
         }
