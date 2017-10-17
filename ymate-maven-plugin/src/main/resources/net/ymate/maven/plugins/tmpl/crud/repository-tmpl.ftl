@@ -56,7 +56,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     @Override
     @Transaction
-    public ${api.model} create(<#list api.params as p>${p.type?cap_first} ${p.name}<#if p_has_next>, </#if></#list>) throws Exception {
+    public ${api.model} create(<#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>) throws Exception {
         long _now = System.currentTimeMillis();
         //
         ${api.model} _target = ${api.model}.builder().id(__buildPrimaryKey())
@@ -93,7 +93,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     @Override
     @Transaction
-    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p>${p.type?cap_first} ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception {
+    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception {
         ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.MYSQL);
         if (lastModifyTime > 0 && BlurObject.bind(_target.getLastModifyTime()).toLongValue() != lastModifyTime) {
             throw new IllegalStateException("Data version not match.");

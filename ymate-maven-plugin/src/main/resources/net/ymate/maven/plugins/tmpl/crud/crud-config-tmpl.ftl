@@ -6,6 +6,17 @@
         "author": "ymatescaffold",
         "createTime": "${.now?string("yyyy/MM/dd a HH:mm")}"
     },
+    "security": {
+        "enabled": false,
+        "name": "",
+        "prefix": "",
+        "roles": {
+            "admin": false,
+            "operator": false,
+            "user": false
+        },
+        "permissions": []
+    },
     "apis": [
         {
             "name": "",
@@ -38,6 +49,10 @@
                     "required": true,
                     "filter": true,
                     "like": false,
+                    "upload": {
+                        "enabled": false,
+                        "contentType": []
+                    },
                     "description": ""
                 }
             ]

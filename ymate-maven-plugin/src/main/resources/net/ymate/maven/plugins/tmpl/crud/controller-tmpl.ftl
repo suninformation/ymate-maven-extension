@@ -1,12 +1,20 @@
 package ${app.packageName}.controller;
 
 import net.ymate.framework.validation.*;
-import net.ymate.framework.webmvc.WebResult;
+import net.ymate.framework.webmvc.WebResult;<#if security?? && security.enabled>
+import net.ymate.module.security.ISecurity;
+import net.ymate.module.security.annotation.Permission;
+import net.ymate.module.security.annotation.Security;</#if>
 import net.ymate.platform.core.beans.annotation.Inject;
 import net.ymate.platform.persistence.IResultSet;
 import net.ymate.platform.validation.annotation.*;
 import net.ymate.platform.validation.validate.*;
-import net.ymate.platform.webmvc.annotation.*;
+import net.ymate.platform.webmvc.annotation.*;<#if upload>
+import net.ymate.platform.core.util.FileUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.core.util.UUIDUtils;
+import java.io.File;
+import net.ymate.platform.webmvc.IUploadFileWrapper;</#if>
 import net.ymate.platform.webmvc.base.Type;
 import net.ymate.platform.webmvc.view.IView;
 
@@ -24,7 +32,9 @@ import java.util.*;
  * @version ${app.version?default("1.0.0")}
  */
 @Controller
-@RequestMapping(value = "${api.mapping}")
+@RequestMapping(value = "${api.mapping}")<#if security?? && security.enabled>
+@Security<#if security.roles?? || security.permissions??>
+@Permission(<#if security.name?? && (security.name?length > 0)>name = "${security.name}", </#if><#if security.roles?? && (security.roles?size > 0)>roles = {<#list security.roles as p>${p}<#if p_has_next>,</#if></#list>}</#if><#if security.permissions?? && (security.permissions?size > 0)>, value = {<#list security.permissions as p>"${p}"<#if p_has_next>,</#if></#list>}</#if>)</#if></#if>
 public class ${api.name?cap_first}Controller {
 
     @Inject
@@ -41,7 +51,8 @@ public class ${api.name?cap_first}Controller {
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
-    @RequestMapping("/query")
+    @RequestMapping("/query")<#if security?? && security.enabled>
+    @Permission("${security.prefix}${api.name?upper_case}_QUERY")</#if>
     public IView __query(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter><#if p.required?? && p.required>@VRequried</#if><#if p.regex?? && (p.regex?length > 0)>
                          @VRegex(regex = "${p.regex}")</#if><#if p.email?? && p.email>
                          @VEmail</#if><#if p.mobile?? && p.mobile>
@@ -60,7 +71,20 @@ public class ${api.name?cap_first}Controller {
     return WebResult.SUCCESS().data(_result).toJSON();
     }
 
-<#if !query && api.primary?? && (api.params?? && api.params?size > 0)>
+<#if !query && api.primary?? && (api.params?? && api.params?size > 0)><#if upload>
+    private String __transferUploadFile(IUploadFileWrapper fileWrapper) throws Exception {
+        if (fileWrapper != null) {
+            String _fileName = "/upload/${api.name?lower_case}//" + UUIDUtils.UUID() + "." + FileUtils.getExtName(fileWrapper.getName());
+            File _dist = new File(RuntimeUtils.getRootPath(false), _fileName);
+            File _distParent = _dist.getParentFile();
+            if (_distParent.exists() || _distParent.mkdirs()) {
+                fileWrapper.transferTo(_dist);
+                return _fileName;
+            }
+        }
+        return null;
+    }
+</#if>
     /**
      * 创建新记录
      *
@@ -70,18 +94,20 @@ public class ${api.name?cap_first}Controller {
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
-    @RequestMapping(value = "/create", method = Type.HttpMethod.POST)
-    public IView __create(<#list api.params as p><#if p.required?? && p.required>@VRequried</#if><#if p.regex?? && (p.regex?length > 0)>
+    @RequestMapping(value = "/create", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
+    @Permission("${security.prefix}${api.name?upper_case}_CREATE")</#if><#if upload>
+    @FileUpload</#if>
+    public IView __create(<#list api.params as p><#if p.required?? && p.required>@VRequried</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>@VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.regex?? && (p.regex?length > 0)>
                           @VRegex(regex = "${p.regex}")</#if><#if p.email?? && p.email>
                           @VEmail</#if><#if p.mobile?? && p.mobile>
                           @VMobile</#if><#if p.datetime?? && p.datetime>
                           @VDateTime</#if><#if p.numeric?? && p.numeric>
                           @VNumeric<#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>min = ${p.min})<#elseif (p.max?? && p.max > 0)>max = ${p.max})</#if> <#else><#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>
-                          @VLength(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>@VLength(min = ${p.min})<#elseif (p.max?? && p.max > 0)>@VLength(max = ${p.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
-                          @VField(label = "${p.label}")</#if> @RequestParam ${p.type?cap_first} ${p.name}<#if p_has_next>,
+                          @VLength(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>@VLength(min = ${p.min})<#elseif (p.max?? && p.max > 0)>@VLength(max = ${p.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
+                          @VField(label = "${p.label}")</#if> @RequestParam <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>,
 
                           </#if></#list>) throws Exception {
-        __repository.create(<#list api.params as p>${p.name}<#if p_has_next>, </#if></#list>);
+        __repository.create(<#list api.params as p><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if><#if p_has_next>, </#if></#list>);
         return WebResult.SUCCESS().toJSON();
     }
 
@@ -92,7 +118,8 @@ public class ${api.name?cap_first}Controller {
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
-    @RequestMapping("/detail")
+    @RequestMapping("/detail")<#if security?? && security.enabled>
+    @Permission("${security.prefix}${api.name?upper_case}_DETAIL")</#if>
     public IView __detail(@VRequried<#if api.primary.numeric?? && api.primary.numeric>
                           @VNumeric<#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>max = ${api.primary.max})</#if> <#else><#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>
                           @VLength(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>@VLength(min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>@VLength(max = ${api.primary.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
@@ -111,25 +138,28 @@ public class ${api.name?cap_first}Controller {
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
-    @RequestMapping(value = "/update", method = Type.HttpMethod.POST)
+    @RequestMapping(value = "/update", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
+    @Permission("${security.prefix}${api.name?upper_case}_UPDATE")</#if><#if upload>
+    @FileUpload</#if>
     public IView __update(@VRequried<#if api.primary.numeric?? && api.primary.numeric>
                           @VNumeric<#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>max = ${api.primary.max})</#if> <#else><#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>
                           @VLength(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>@VLength(min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>@VLength(max = ${api.primary.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
                           @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name},
 
                           <#list api.params as p><#if p.required?? && p.required>
-                          @VRequried</#if><#if p.regex?? && (p.regex?length > 0)>
+                          @VRequried</#if><#if p.regex?? && (p.regex?length > 0)><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
+                          @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else>
                           @VRegex(regex = "${p.regex}")</#if><#if p.email?? && p.email>
                           @VEmail</#if><#if p.mobile?? && p.mobile>
                           @VMobile</#if><#if p.datetime?? && p.datetime>
                           @VDateTime</#if><#if p.numeric?? && p.numeric>
                           @VNumeric<#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>min = ${p.min})<#elseif (p.max?? && p.max > 0)>max = ${p.max})</#if> <#else><#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>
-                          @VLength(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>@VLength(min = ${p.min})<#elseif (p.max?? && p.max > 0)>@VLength(max = ${p.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
-                          @VField(label = "${p.label}")</#if> @RequestParam ${p.type?cap_first} ${p.name}<#if p_has_next>,
+                          @VLength(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>@VLength(min = ${p.min})<#elseif (p.max?? && p.max > 0)>@VLength(max = ${p.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
+                          @VField(label = "${p.label}")</#if> @RequestParam <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>,
 
                           </#if></#list>,
                           @RequestParam(defaultValue = "0") Long lastModifyTime) throws Exception {
-        __repository.update(${api.primary.name}, <#list api.params as p>${p.name}<#if p_has_next>, </#if></#list>, lastModifyTime);
+        __repository.update(${api.primary.name}, <#list api.params as p><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if><#if p_has_next>, </#if></#list>, lastModifyTime);
         return WebResult.SUCCESS().toJSON();
     }
 
@@ -140,7 +170,8 @@ public class ${api.name?cap_first}Controller {
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
-    @RequestMapping(value = "/remove", method = Type.HttpMethod.POST)
+    @RequestMapping(value = "/remove", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
+    @Permission("${security.prefix}${api.name?upper_case}_REMOVE")</#if>
     public IView __remove(@VRequried<#if api.primary.numeric?? && api.primary.numeric>
                           @VNumeric<#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>max = ${api.primary.max})</#if> <#else><#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>
                           @VLength(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>@VLength(min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>@VLength(max = ${api.primary.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>

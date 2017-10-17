@@ -39,7 +39,7 @@ public interface I${api.name?cap_first}Repository {
      * @return 返回创建后的数据对象
      * @throws Exception 可能产生的任何异常
      */
-    ${api.model} create(<#list api.params as p>${p.type?cap_first} ${p.name}<#if p_has_next>, </#if></#list>) throws Exception;
+    ${api.model} create(<#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>) throws Exception;
 
     /**
     * 删除指定主键的记录
@@ -70,7 +70,7 @@ public interface I${api.name?cap_first}Repository {
      * @return 返回更新后的数据对象
      * @throws Exception 可能产生的任何异常
      */
-    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p>${p.type?cap_first} ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception;
+    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception;
 
     /**
      * 查询指定主键的数据记录

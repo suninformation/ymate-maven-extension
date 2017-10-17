@@ -55,7 +55,9 @@ public class CrudMojo extends AbstractTmplMojo {
                     Map<String, Object> _props = new HashMap<String, Object>();
                     _props.put("app", _application.toMap());
                     _props.put("api", _api.toMap());
+                    _props.put("security", _application.getSecurity());
                     _props.put("query", _api.isQuery());
+                    _props.put("upload", _api.isUpload());
                     if (_api.isQuery()) {
                         _sqlMap.put(_api.getName(), _api.getQuery());
                     }
@@ -99,9 +101,11 @@ public class CrudMojo extends AbstractTmplMojo {
 
         private List<ApiMeta> __apis = new ArrayList<ApiMeta>();
 
+        private Map<String, Object> __security = new HashMap<String, Object>();
+
         private String __basePath;
 
-        public ApplicationMeta(String basedir, String packageBase, String projectBase, String versionBase, JSONObject config) {
+        ApplicationMeta(String basedir, String packageBase, String projectBase, String versionBase, JSONObject config) {
             __basePath = basedir;
             JSONObject _application = config.getJSONObject("application");
             if (_application == null) {
@@ -119,23 +123,59 @@ public class CrudMojo extends AbstractTmplMojo {
                     __apis.add(new ApiMeta(_apis.getJSONObject(_idx)));
                 }
             }
+            //
+            JSONObject _security = config.getJSONObject("security");
+            boolean _enabled = _security != null && _security.getBooleanValue("enabled");
+            __security.put("enabled", _enabled);
+            if (_enabled) {
+                __security.put("name", _security.getString("name"));
+                __security.put("prefix", StringUtils.trimToEmpty(_security.getString("prefix")).toUpperCase());
+                //
+                JSONObject _roles = _security.getJSONObject("roles");
+                if (_roles != null && (_roles.getBooleanValue("admin") || _roles.getBooleanValue("operator") || _roles.getBooleanValue("user"))) {
+                    List<String> _roleList = new ArrayList<String>();
+                    if (_roles.getBooleanValue("admin")) {
+                        _roleList.add("ISecurity.Role.ADMIN");
+                    }
+                    if (_roles.getBooleanValue("operator")) {
+                        _roleList.add("ISecurity.Role.OPERATOR");
+                    }
+                    if (_roles.getBooleanValue("user")) {
+                        _roleList.add("ISecurity.Role.USER");
+                    }
+                    __security.put("roles", _roleList.toArray());
+                }
+                //
+                JSONArray _permissions = _security.getJSONArray("permissions");
+                if (_permissions != null && !_permissions.isEmpty()) {
+                    List<String> _pList = new ArrayList<String>();
+                    for (int _idx = 0; _idx < _permissions.size(); _idx++) {
+                        _pList.add(_permissions.getString(_idx).toUpperCase());
+                    }
+                    __security.put("permissions", _pList.toArray());
+                }
+            }
         }
 
-        public File buildJavaFilePath(String filePathName) {
+        File buildJavaFilePath(String filePathName) {
             File _base = new File(__basePath + "/src/main/java", ((String) __attrs.get("packageName")).replace(".", "/"));
             return new File(_base, filePathName);
         }
 
-        public File buildResourceFilePath(String filePathName) {
+        File buildResourceFilePath(String filePathName) {
             return new File(__basePath + "/src/main/webapp/WEB-INF/", filePathName);
         }
 
-        public String getName() {
+        String getName() {
             return (String) __attrs.get("name");
         }
 
-        public List<ApiMeta> getApis() {
+        List<ApiMeta> getApis() {
             return __apis;
+        }
+
+        Map<String, Object> getSecurity() {
+            return __security;
         }
 
         Map<String, Object> toMap() {
@@ -149,7 +189,9 @@ public class CrudMojo extends AbstractTmplMojo {
 
         private boolean __query;
 
-        public ApiMeta(JSONObject config) {
+        private boolean __upload;
+
+        ApiMeta(JSONObject config) {
             if (config == null) {
                 throw new NullArgumentException("config");
             }
@@ -197,25 +239,33 @@ public class CrudMojo extends AbstractTmplMojo {
             if (_params != null && !_params.isEmpty()) {
                 List<Map<String, Object>> _paramList = new ArrayList<Map<String, Object>>();
                 for (int _idx = 0; _idx < _params.size(); _idx++) {
-                    _paramList.add(new ApiParameter(_params.getJSONObject(_idx)).toMap());
+                    ApiParameter _param = new ApiParameter(_params.getJSONObject(_idx));
+                    if (_param.isUpload()) {
+                        __upload = true;
+                    }
+                    _paramList.add(_param.toMap());
                 }
                 __attrs.put("params", _paramList);
             }
         }
 
-        public String getName() {
+        String getName() {
             return (String) __attrs.get("name");
         }
 
-        public String getQuery() {
+        String getQuery() {
             return (String) __attrs.get("query");
         }
 
-        public boolean isQuery() {
+        boolean isQuery() {
             return __query;
         }
 
-        public Map<String, Object> toMap() {
+        boolean isUpload() {
+            return __upload;
+        }
+
+        Map<String, Object> toMap() {
             return __attrs;
         }
     }
@@ -224,7 +274,9 @@ public class CrudMojo extends AbstractTmplMojo {
 
         private Map<String, Object> __attrs = new HashMap<String, Object>();
 
-        public ApiParameter(JSONObject config) {
+        private boolean __upload;
+
+        ApiParameter(JSONObject config) {
             if (config == null) {
                 throw new NullArgumentException("config");
             }
@@ -250,10 +302,31 @@ public class CrudMojo extends AbstractTmplMojo {
             __attrs.put("required", config.getBooleanValue("required"));
             __attrs.put("filter", config.getBooleanValue("filter"));
             __attrs.put("like", config.getBooleanValue("like"));
+            //
+            Map<String, Object> _uploadMap = new HashMap<String, Object>();
+            JSONObject _upload = config.getJSONObject("upload");
+            if (_upload != null && _upload.getBooleanValue("enabled")) {
+                __upload = true;
+                JSONArray _types = _upload.getJSONArray("contentTypes");
+                List<String> _contentTypes = new ArrayList<String>();
+                if (_types != null) {
+                    for (int _idx = 0; _idx < _types.size(); _idx++) {
+                        _contentTypes.add(_types.getString(_idx));
+                    }
+                }
+                _uploadMap.put("contentTypes", _contentTypes);
+                //
+            }
+            _uploadMap.put("enabled", __upload);
+            __attrs.put("upload", _uploadMap);
             __attrs.put("description", StringUtils.trimToEmpty(config.getString("description")));
         }
 
-        public Map<String, Object> toMap() {
+        boolean isUpload() {
+            return __upload;
+        }
+
+        Map<String, Object> toMap() {
             return __attrs;
         }
     }
