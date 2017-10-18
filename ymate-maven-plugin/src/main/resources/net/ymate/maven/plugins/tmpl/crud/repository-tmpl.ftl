@@ -2,6 +2,7 @@ package ${app.packageName}.repository.impl;
 
 <#if query>import ${app.packageName}.config.${app.name?cap_first}RepositoryConfig;</#if>
 import ${app.packageName}.repository.I${api.name?cap_first}Repository;
+import net.ymate.framework.exception.DataVersionMismatchException;
 import net.ymate.platform.configuration.IConfiguration;
 import net.ymate.platform.core.beans.annotation.Inject;
 import net.ymate.platform.core.beans.support.PropertyStateSupport;
@@ -15,10 +16,7 @@ import net.ymate.platform.persistence.jdbc.ISessionExecutor;
 import net.ymate.platform.persistence.jdbc.JDBC;
 import net.ymate.platform.persistence.jdbc.annotation.Transaction;
 import net.ymate.platform.persistence.jdbc.base.impl.EntityResultSetHandler;
-import net.ymate.platform.persistence.jdbc.query.Cond;
-import net.ymate.platform.persistence.jdbc.query.IDBLocker;
-import net.ymate.platform.persistence.jdbc.query.Select;
-import net.ymate.platform.persistence.jdbc.query.Where;
+import net.ymate.platform.persistence.jdbc.query.*;
 <#if query>import net.ymate.platform.persistence.jdbc.repo.IRepository;</#if>
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import org.apache.commons.lang.StringUtils;
@@ -96,7 +94,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception {
         ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.MYSQL);
         if (lastModifyTime > 0 && BlurObject.bind(_target.getLastModifyTime()).toLongValue() != lastModifyTime) {
-            throw new IllegalStateException("Data version not match.");
+            throw new DataVersionMismatchException("Data version mismatch.");
         }
         PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
         _target = _state.bind().bind()
@@ -113,7 +111,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }
 
     @Override
-    public IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>final ${p.type?cap_first} ${p.name}</#if><#if p_has_next>, </#if></#list>, </#if>final int page, final int pageSize) throws Exception {
+    public IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>final ${p.type?cap_first} ${p.name}</#if><#if p_has_next>, </#if></#list>, </#if>final Fields fields, final OrderBy orderBy, final int page, final int pageSize) throws Exception {
         return JDBC.get().openSession(new ISessionExecutor<IResultSet<${api.model}>>() {
             @Override
             public IResultSet<${api.model}> execute(ISession session) throws Exception {
@@ -133,10 +131,16 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                     }
                     </#if>
                 </#list>
-                Where _where = Where.create(_cond).orderDesc(${api.model}.FIELDS.LAST_MODIFY_TIME);
+                //
+                Where _where = Where.create(_cond);
+                if (orderBy != null) {
+                    _where.orderBy().orderBy(orderBy);
+                } else {
+                    _where.orderDesc(${api.model}.FIELDS.LAST_MODIFY_TIME);
+                }
                 //
                 return session.find(Select.create(session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix(), ${api.model}.class)
-                            .where(_where).toSQL(), new EntityResultSetHandler<${api.model}>(${api.model}.class), Page.createIfNeed(page, pageSize));
+                            .field(fields == null ? Fields.create() : fields).where(_where).toSQL(), new EntityResultSetHandler<${api.model}>(${api.model}.class), Page.createIfNeed(page, pageSize));
             }
         });
     }

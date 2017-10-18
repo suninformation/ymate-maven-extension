@@ -18,6 +18,12 @@
         },
         "permissions": []
     },
+    "intercept": {
+        "before": [],
+        "after": [],
+        "around": [],
+        "params": {}
+    },
     "apis": [
         {
             "name": "",
@@ -53,7 +59,7 @@
                     "like": false,
                     "upload": {
                         "enabled": false,
-                        "contentType": []
+                        "contentTypes": []
                     },
                     "description": ""
                 }

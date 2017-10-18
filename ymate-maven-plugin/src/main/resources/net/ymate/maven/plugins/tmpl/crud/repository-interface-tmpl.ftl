@@ -1,6 +1,8 @@
 package ${app.packageName}.repository;
 
+import net.ymate.platform.persistence.Fields;
 import net.ymate.platform.persistence.IResultSet;
+import net.ymate.platform.persistence.jdbc.query.OrderBy;
 import java.util.List;
 
 /**
@@ -88,11 +90,13 @@ public interface I${api.name?cap_first}Repository {
      <#if (api.params?? && api.params?size > 0)><#list api.params as p>
      * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}</#if> ${p.description}
      </#list></#if>
+     * @param fields 过滤字段集合
+     * @param orderBy 排序对象
      * @param page 查询页号
      * @param pageSize 分页大小
      * @return 返回查询结果集对象
      * @throws Exception 可能产生的任何异常
      */
-    IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>${p.type?cap_first} ${p.name}</#if><#if p_has_next>, </#if></#list>, </#if> int page, int pageSize) throws Exception;
+    IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>${p.type?cap_first} ${p.name}</#if><#if p_has_next>, </#if></#list>, </#if>Fields fields, OrderBy orderBy, int page, int pageSize) throws Exception;
     </#if>
 }

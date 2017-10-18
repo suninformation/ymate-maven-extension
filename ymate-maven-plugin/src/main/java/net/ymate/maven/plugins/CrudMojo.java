@@ -59,6 +59,7 @@ public class CrudMojo extends AbstractTmplMojo {
                         _props.put("app", _application.toMap());
                         _props.put("api", _api.toMap());
                         _props.put("security", _application.getSecurity());
+                        _props.put("intercept", _application.getIntercept());
                         _props.put("query", _api.isQuery());
                         _props.put("upload", _api.isUpload());
                         if (_api.isQuery()) {
@@ -109,6 +110,8 @@ public class CrudMojo extends AbstractTmplMojo {
         private List<ApiMeta> __apis = new ArrayList<ApiMeta>();
 
         private Map<String, Object> __security = new HashMap<String, Object>();
+
+        private Map<String, Object> __intercept = new HashMap<String, Object>();
 
         private String __basePath;
 
@@ -163,6 +166,37 @@ public class CrudMojo extends AbstractTmplMojo {
                     __security.put("permissions", _pList.toArray());
                 }
             }
+            //
+            JSONObject _intercept = config.getJSONObject("intercept");
+            if (_intercept != null) {
+                JSONArray _before = _intercept.getJSONArray("before");
+                if (_before != null && !_before.isEmpty()) {
+                    __intercept.put("before", _before.toArray());
+                }
+                //
+                JSONArray _after = _intercept.getJSONArray("after");
+                if (_after != null && !_after.isEmpty()) {
+                    __intercept.put("after", _after.toArray());
+                }
+                //
+                JSONArray _around = _intercept.getJSONArray("around");
+                if (_around != null && !_around.isEmpty()) {
+                    __intercept.put("around", _around.toArray());
+                }
+                //
+                JSONObject _params = _intercept.getJSONObject("params");
+                if (_params != null && !_params.isEmpty()) {
+                    Map<String, Object> _paramMap = new HashMap<String, Object>();
+                    for (Map.Entry<String, Object> _entry : _params.entrySet()) {
+                        if (_entry.getValue() != null) {
+                            _paramMap.put(_entry.getKey(), _entry.getValue());
+                        }
+                    }
+                    if (!_paramMap.isEmpty()) {
+                        __intercept.put("params", _paramMap);
+                    }
+                }
+            }
         }
 
         File buildJavaFilePath(String filePathName) {
@@ -188,6 +222,10 @@ public class CrudMojo extends AbstractTmplMojo {
 
         Map<String, Object> getSecurity() {
             return __security;
+        }
+
+        Map<String, Object> getIntercept() {
+            return __intercept;
         }
 
         Map<String, Object> toMap() {
