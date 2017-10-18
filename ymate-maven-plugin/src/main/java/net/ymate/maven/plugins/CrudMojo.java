@@ -49,37 +49,44 @@ public class CrudMojo extends AbstractTmplMojo {
                 ApplicationMeta _application = new ApplicationMeta(basedir, packageBase, projectName, version,
                         JSON.parseObject(IOUtils.toString(new FileInputStream(_cfgFile), "UTF-8"), Feature.OrderedField));
                 //
-                Map<String, Object> _sqlMap = new HashMap<String, Object>();
-                //
-                for (ApiMeta _api : _application.getApis()) {
-                    Map<String, Object> _props = new HashMap<String, Object>();
-                    _props.put("app", _application.toMap());
-                    _props.put("api", _api.toMap());
-                    _props.put("security", _application.getSecurity());
-                    _props.put("query", _api.isQuery());
-                    _props.put("upload", _api.isUpload());
-                    if (_api.isQuery()) {
-                        _sqlMap.put(_api.getName(), _api.getQuery());
+                if (_application.isLocked()) {
+                    getLog().info("CRUD has been locked.");
+                } else {
+                    Map<String, Object> _sqlMap = new HashMap<String, Object>();
+                    //
+                    for (ApiMeta _api : _application.getApis()) {
+                        Map<String, Object> _props = new HashMap<String, Object>();
+                        _props.put("app", _application.toMap());
+                        _props.put("api", _api.toMap());
+                        _props.put("security", _application.getSecurity());
+                        _props.put("query", _api.isQuery());
+                        _props.put("upload", _api.isUpload());
+                        if (_api.isQuery()) {
+                            _sqlMap.put(_api.getName(), _api.getQuery());
+                        }
+                        if (_api.isLocked()) {
+                            getLog().info("API " + _api.getName() + " has been locked.");
+                        } else {
+                            String _apiName = StringUtils.capitalize(_api.getName());
+                            //
+                            __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
+                            __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
+                            __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
+                        }
                     }
-                    //
-                    String _apiName = StringUtils.capitalize(_api.getName());
-                    //
-                    __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
-                    __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
-                    __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
-                }
-                if (!_sqlMap.isEmpty()) {
-                    Map<String, Object> _props = new HashMap<String, Object>();
-                    _props.put("app", _application.toMap());
-                    _props.put("sqls", _sqlMap);
-                    //
-                    String _projectName = StringUtils.capitalize(_application.getName());
-                    String _cfgFileName = "cfgs/" + _projectName.toLowerCase() + ".repo.xml";
-                    //
-                    _props.put("cfgFileName", _cfgFileName);
-                    //
-                    __doWriteSingleFile(_application.buildResourceFilePath(_cfgFileName), "crud/config-file-tmpl", _props);
-                    __doWriteSingleFile(_application.buildJavaFilePath("config/" + _projectName + "RepositoryConfig.java"), "crud/config-tmpl", _props);
+                    if (!_sqlMap.isEmpty()) {
+                        Map<String, Object> _props = new HashMap<String, Object>();
+                        _props.put("app", _application.toMap());
+                        _props.put("sqls", _sqlMap);
+                        //
+                        String _projectName = StringUtils.capitalize(_application.getName());
+                        String _cfgFileName = "cfgs/" + _projectName.toLowerCase() + ".repo.xml";
+                        //
+                        _props.put("cfgFileName", _cfgFileName);
+                        //
+                        __doWriteSingleFile(_application.buildResourceFilePath(_cfgFileName), "crud/config-file-tmpl", _props);
+                        __doWriteSingleFile(_application.buildJavaFilePath("config/" + _projectName + "RepositoryConfig.java"), "crud/config-tmpl", _props);
+                    }
                 }
             } else {
                 Map<String, Object> _props = new HashMap<String, Object>();
@@ -116,6 +123,7 @@ public class CrudMojo extends AbstractTmplMojo {
             __attrs.put("version", StringUtils.defaultIfBlank(_application.getString("version"), versionBase));
             __attrs.put("author", StringUtils.defaultIfBlank(_application.getString("author"), "ymatescaffold"));
             __attrs.put("createTime", _application.getString("createTime"));
+            __attrs.put("locked", _application.getBooleanValue("locked"));
             //
             JSONArray _apis = config.getJSONArray("apis");
             if (_apis != null && !_apis.isEmpty()) {
@@ -168,6 +176,10 @@ public class CrudMojo extends AbstractTmplMojo {
 
         String getName() {
             return (String) __attrs.get("name");
+        }
+
+        boolean isLocked() {
+            return (Boolean) __attrs.get("locked");
         }
 
         List<ApiMeta> getApis() {
@@ -227,6 +239,7 @@ public class CrudMojo extends AbstractTmplMojo {
                 throw new IllegalArgumentException("api model or query can not null.");
             }
             //
+            __attrs.put("locked", config.getBooleanValue("locked"));
             __attrs.put("description", config.getString("description"));
             //
             JSONObject _primary = config.getJSONObject("primary");
@@ -259,6 +272,10 @@ public class CrudMojo extends AbstractTmplMojo {
 
         boolean isQuery() {
             return __query;
+        }
+
+        boolean isLocked() {
+            return (Boolean) __attrs.get("locked");
         }
 
         boolean isUpload() {

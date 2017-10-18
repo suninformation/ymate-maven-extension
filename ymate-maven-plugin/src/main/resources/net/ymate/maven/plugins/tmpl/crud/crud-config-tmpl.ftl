@@ -4,7 +4,8 @@
         "version": "${version}",
         "package": "${packageName}",
         "author": "ymatescaffold",
-        "createTime": "${.now?string("yyyy/MM/dd a HH:mm")}"
+        "createTime": "${.now?string("yyyy/MM/dd a HH:mm")}",
+        "locked": false
     },
     "security": {
         "enabled": false,
@@ -25,6 +26,7 @@
             "model": "",
             "query": "",
             "description": "",
+            "locked": false,
             "primary": {
                 "label": "",
                 "column": "",
