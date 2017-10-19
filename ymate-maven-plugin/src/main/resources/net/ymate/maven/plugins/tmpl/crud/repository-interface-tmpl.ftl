@@ -31,7 +31,7 @@ public interface I${api.name?cap_first}Repository {
     IResultSet<Object[]> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>${p.type?cap_first} ${p.name}</#if><#if p_has_next>, </#if></#list>, </#if>int page, final int pageSize, IResultSet<Object[]>... results) throws Exception;
 
     <#else>
-    <#if api.primary?? && (api.params?? && api.params?size > 0)>
+    <#if (api.params?? && api.params?size > 0)>
     /**
      * 创建新数据记录
      *
@@ -41,7 +41,7 @@ public interface I${api.name?cap_first}Repository {
      * @return 返回创建后的数据对象
      * @throws Exception 可能产生的任何异常
      */
-    ${api.model} create(<#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>) throws Exception;
+    ${api.model} create(<#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>) throws Exception;</#if>
 
     /**
     * 删除指定主键的记录
@@ -61,7 +61,7 @@ public interface I${api.name?cap_first}Repository {
      */
     int[] remove(${api.primary.type?cap_first}[] ${api.primary.name}s) throws Exception;
 
-    /**
+    <#if (api.params?? && api.params?size > 0)>/**
      * 更新指定主键的数据记录
      *
      * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}</#if> ${api.primary.description}
@@ -72,7 +72,7 @@ public interface I${api.name?cap_first}Repository {
      * @return 返回更新后的数据对象
      * @throws Exception 可能产生的任何异常
      */
-    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception;
+    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception;</#if>
 
     /**
      * 查询指定主键的数据记录
@@ -82,7 +82,6 @@ public interface I${api.name?cap_first}Repository {
      * @throws Exception 可能产生的任何异常
      */
     ${api.model} find(${api.primary.type?cap_first} ${api.primary.name}) throws Exception;
-    </#if>
 
     /**
      * 条件查询

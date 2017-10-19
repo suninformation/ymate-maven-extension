@@ -75,7 +75,7 @@ public class ${api.name?cap_first}Controller {
     return WebResult.SUCCESS().data(_result).toJSON();
     }
 
-<#if !query && api.primary?? && (api.params?? && api.params?size > 0)><#if upload>
+<#if !query><#if upload>
     private String __transferUploadFile(IUploadFileWrapper fileWrapper) throws Exception {
         if (fileWrapper != null) {
             String _fileName = "/upload/${api.name?lower_case}//" + UUIDUtils.UUID() + "." + FileUtils.getExtName(fileWrapper.getName());
@@ -87,9 +87,9 @@ public class ${api.name?cap_first}Controller {
             }
         }
         return null;
-    }
-</#if>
-    /**
+    }</#if>
+
+    <#if (api.params?? && api.params?size > 0)>/**
      * 创建新记录
      *
      <#if (api.params?? && api.params?size > 0)><#list api.params as p>
@@ -165,7 +165,7 @@ public class ${api.name?cap_first}Controller {
                           @RequestParam(defaultValue = "0") Long lastModifyTime) throws Exception {
         __repository.update(${api.primary.name}, <#list api.params as p><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if><#if p_has_next>, </#if></#list>, lastModifyTime);
         return WebResult.SUCCESS().toJSON();
-    }
+    }</#if>
 
     /**
      * 删除指定主键的记录

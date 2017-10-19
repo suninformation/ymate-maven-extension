@@ -19,6 +19,8 @@ import net.ymate.platform.persistence.jdbc.base.impl.EntityResultSetHandler;
 import net.ymate.platform.persistence.jdbc.query.*;
 <#if query>import net.ymate.platform.persistence.jdbc.repo.IRepository;</#if>
 import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -47,12 +49,12 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         return results[0];
     }
 
-    <#else><#if api.primary?? && (api.params?? && api.params?size > 0)>
-    protected String __buildPrimaryKey() {
-        return UUIDUtils.UUID();
+    <#else>
+    protected <#if (api.primary.type?lower_case == 'string')>String<#else>${api.primary.type?cap_first}</#if> __buildPrimaryKey() {
+        return <#if (api.primary.type?lower_case == 'string')>UUIDUtils.UUID()<#else>null // TODO Build PrimaryKey for ${api.name?cap_first}</#if>;
     }
 
-    @Override
+    <#if (api.params?? && api.params?size > 0)>@Override
     @Transaction
     public ${api.model} create(<#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>) throws Exception {
         long _now = System.currentTimeMillis();
@@ -65,11 +67,14 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                 .lastModifyTime(_now)
                 .build();
         return _target.save();
-    }
+    }</#if>
 
     @Override
     @Transaction
     public int remove(final ${api.primary.type?cap_first} ${api.primary.name}) throws Exception {
+        if (<#if (api.primary.type?lower_case == 'string')>StringUtils.isBlank(${api.primary.name})<#else>${api.primary.name} == null</#if>) {
+            throw new NullArgumentException("${api.primary.name}");
+        }
         return JDBC.get().openSession(new ISessionExecutor<Integer>() {
             @Override
             public Integer execute(ISession session) throws Exception {
@@ -81,6 +86,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     @Override
     @Transaction
     public int[] remove(final ${api.primary.type?cap_first}[] ${api.primary.name}s) throws Exception {
+        if (ArrayUtils.isEmpty(${api.primary.name}s)) {
+            throw new NullArgumentException("${api.primary.name}s");
+        }
         return JDBC.get().openSession(new ISessionExecutor<int[]>() {
             @Override
             public int[] execute(ISession session) throws Exception {
@@ -89,7 +97,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         });
     }
 
-    @Override
+    <#if (api.params?? && api.params?size > 0)>@Override
     @Transaction
     public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception {
         ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.MYSQL);
@@ -103,10 +111,13 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                 </#list>
                 .lastModifyTime(System.currentTimeMillis()).build();
         return _target.update(Fields.create(_state.getChangedPropertyNames()));
-    }
+    }</#if>
 
     @Override
     public ${api.model} find(${api.primary.type?cap_first} ${api.primary.name}) throws Exception {
+        if (<#if (api.primary.type?lower_case == 'string')>StringUtils.isBlank(${api.primary.name})<#else>${api.primary.name} == null</#if>) {
+            throw new NullArgumentException("${api.primary.name}");
+        }
         return ${api.model}.builder().id(${api.primary.name}).build().load();
     }
 
@@ -116,7 +127,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             @Override
             public IResultSet<${api.model}> execute(ISession session) throws Exception {
                 Cond _cond = Cond.create();
-                <#list api.params as p>
+                <#if api.params?? && (api.params?size > 0)><#list api.params as p>
                     <#if p.type?lower_case == 'string'>
                     if (StringUtils.isNotBlank(${p.name})) {
                     <#if p.like?? && p.like>
@@ -130,7 +141,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                         _cond.eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
                     }
                     </#if>
-                </#list>
+                </#list></#if>
                 //
                 Where _where = Where.create(_cond);
                 if (orderBy != null) {
@@ -144,5 +155,5 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             }
         });
     }
-    </#if></#if>
+    </#if>
 }

@@ -42,6 +42,12 @@ public class CrudMojo extends AbstractTmplMojo {
     @Parameter(property = "file", defaultValue = "misc/crud.json")
     private String fileName;
 
+    @Parameter(property = "controller", defaultValue = "true")
+    private boolean controller;
+
+    @Parameter(property = "repository", defaultValue = "true")
+    private boolean repository;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         File _cfgFile = new File(basedir, fileName);
         try {
@@ -70,12 +76,16 @@ public class CrudMojo extends AbstractTmplMojo {
                         } else {
                             String _apiName = StringUtils.capitalize(_api.getName());
                             //
-                            __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
-                            __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
-                            __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
+                            if (controller) {
+                                __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
+                            }
+                            if (repository) {
+                                __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
+                                __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
+                            }
                         }
                     }
-                    if (!_sqlMap.isEmpty()) {
+                    if (repository && !_sqlMap.isEmpty()) {
                         Map<String, Object> _props = new HashMap<String, Object>();
                         _props.put("app", _application.toMap());
                         _props.put("sqls", _sqlMap);
@@ -247,7 +257,7 @@ public class CrudMojo extends AbstractTmplMojo {
             }
             String _name = config.getString("name");
             if (StringUtils.isBlank(_name)) {
-                throw new IllegalArgumentException("api name can not null.");
+                throw new IllegalArgumentException("API name can not null.");
             }
             __attrs.put("name", _name);
             //
@@ -263,18 +273,18 @@ public class CrudMojo extends AbstractTmplMojo {
             if (StringUtils.equalsIgnoreCase(_type, "model")) {
                 String _model = config.getString("model");
                 if (StringUtils.isBlank(_model)) {
-                    throw new IllegalArgumentException("api model can not null.");
+                    throw new IllegalArgumentException("API model can not null.");
                 }
                 __attrs.put("model", _model);
             } else if (StringUtils.equalsIgnoreCase(_type, "query")) {
                 String _query = config.getString("query");
                 if (StringUtils.isBlank(_query)) {
-                    throw new IllegalArgumentException("api query can not null.");
+                    throw new IllegalArgumentException("API query can not null.");
                 }
                 __attrs.put("query", _query);
                 __query = true;
             } else {
-                throw new IllegalArgumentException("api model or query can not null.");
+                throw new IllegalArgumentException("API model or query can not null.");
             }
             //
             __attrs.put("locked", config.getBooleanValue("locked"));
@@ -337,13 +347,13 @@ public class CrudMojo extends AbstractTmplMojo {
             }
             String _name = config.getString("name");
             if (StringUtils.isBlank(_name)) {
-                throw new IllegalArgumentException("param name can not null.");
+                throw new IllegalArgumentException("PARAM name can not null.");
             }
             __attrs.put("name", _name);
             //
             String _column = config.getString("column");
             if (StringUtils.isBlank(_column)) {
-                throw new IllegalArgumentException("param column can not null.");
+                throw new IllegalArgumentException("PARAM column can not null.");
             }
             __attrs.put("column", _column);
             //
