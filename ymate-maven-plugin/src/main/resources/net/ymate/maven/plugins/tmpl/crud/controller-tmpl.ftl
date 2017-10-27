@@ -1,3 +1,4 @@
+<#setting number_format="#">
 package ${app.packageName}.controller;
 
 import net.ymate.framework.validation.*;
@@ -34,7 +35,7 @@ import java.util.*;
 @Controller
 @RequestMapping(value = "${api.mapping}")<#if security?? && security.enabled>
 @Security<#if security.roles?? || security.permissions??>
-@Permission(<#if security.name?? && (security.name?length > 0)>name = "${security.name}", </#if><#if security.roles?? && (security.roles?size > 0)>roles = {<#list security.roles as p>${p}<#if p_has_next>,</#if></#list>}</#if><#if security.permissions?? && (security.permissions?size > 0)>, value = {<#list security.permissions as p>"${p}"<#if p_has_next>,</#if></#list>}</#if>)</#if></#if><#if intercept?? && (intercept?size > 0)><#if intercept.before?? && (intercept.before?size > 0)>
+@Permission(<#if security.name?? && (security.name?length > 0)>name = "${security.name}"</#if><#if security.roles?? && (security.roles?size > 0)>, roles = {<#list security.roles as p>${p}<#if p_has_next>,</#if></#list>}</#if><#if security.permissions?? && (security.permissions?size > 0)>, value = {<#list security.permissions as p>"${p}"<#if p_has_next>,</#if></#list>}</#if>)</#if></#if><#if intercept?? && (intercept?size > 0)><#if intercept.before?? && (intercept.before?size > 0)>
 @Before({<#list intercept.before as p>${p}<#if p_has_next>,</#if></#list>})</#if><#if intercept.after?? && (intercept.after?size > 0)>
 @After({<#list intercept.after as p>${p}<#if p_has_next>,</#if></#list>})</#if><#if intercept.around?? && (intercept.around?size > 0)>
 @Around({<#list intercept.around as p>${p}<#if p_has_next>,</#if></#list>})</#if><#if intercept.params?? && (intercept.params?size > 0)>
@@ -47,8 +48,9 @@ public class ${api.name?cap_first}Controller {
     /**
      * 条件查询
      *
-     <#if (api.params?? && api.params?size > 0)><#list api.params as p>
-     * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}</#if> ${p.description}
+     <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>
+     * @param <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if> <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}<#if p.filter.region>范围最小值</#if></#if><#if p.filter.region>
+     * @param end${p.name?cap_first} <#if p.label?? && (p.label?length > 0)>${p.label}范围最大值</#if></#if></#if>
      </#list></#if>
      * @param page 查询页号
      * @param pageSize 分页大小
@@ -57,20 +59,30 @@ public class ${api.name?cap_first}Controller {
      */
     @RequestMapping("/query")<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_QUERY")</#if>
-    public IView __query(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter><#if p.required?? && p.required>@VRequried</#if><#if p.regex?? && (p.regex?length > 0)>
-                         @VRegex(regex = "${p.regex}")</#if><#if p.email?? && p.email>
-                         @VEmail</#if><#if p.mobile?? && p.mobile>
-                         @VMobile</#if><#if p.datetime?? && p.datetime>
-                         @VDateTime</#if><#if p.numeric?? && p.numeric>
-                         @VNumeric<#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>min = ${p.min})<#elseif (p.max?? && p.max > 0)>max = ${p.max})</#if> <#else><#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>
-                         @VLength(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>@VLength(min = ${p.min})<#elseif (p.max?? && p.max > 0)>@VLength(max = ${p.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
-                         @VField(label = "${p.label}")</#if> @RequestParam ${p.type?cap_first} ${p.name}</#if><#if p_has_next>,
+    public IView __query(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.required?? && p.required>@VRequried</#if><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
+                         @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
+                         @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
+                         @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
+                         @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
+                         @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                         @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
+                         @VField(label = "${p.label}<#if p.filter.region>范围最小值</#if>")</#if></#if> @RequestParam ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>,
 
-                         </#if></#list>, </#if>
+                         <#if p.required?? && p.required>@VRequried</#if><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
+                         @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
+                         @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
+                         @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
+                         @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
+                         @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                         @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if></#if>
+                         @VCompare(with = "begin${p.name?cap_first}"<#if p.label?? && (p.label?length > 0)>, withLabel = "${p.label}范围最小值"</#if>)<#if p.label?? && (p.label?length > 0)>
+                         @VField(label = "${p.label}<#if p.filter.region>范围最大值</#if>")</#if></#if> @RequestParam ${p.type?cap_first}  end${p.name?cap_first}</#if><#if p_has_next>,
 
-                        @RequestParam int page, @RequestParam int pageSize) throws Exception {
+                         </#if></#if></#list>, </#if>
 
-    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>${p.name}</#if><#if p_has_next>, </#if></#list>, </#if>null, null, page, pageSize);
+                         @RequestParam int page, @RequestParam int pageSize) throws Exception {
+
+    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>null, null, page, pageSize);
     //
     return WebResult.SUCCESS().data(_result).toJSON();
     }
@@ -93,7 +105,7 @@ public class ${api.name?cap_first}Controller {
      * 创建新记录
      *
      <#if (api.params?? && api.params?size > 0)><#list api.params as p>
-     * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}</#if> ${p.description}
+     * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}</#if>
      </#list></#if>
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
@@ -101,16 +113,20 @@ public class ${api.name?cap_first}Controller {
     @RequestMapping(value = "/create", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_CREATE")</#if><#if upload>
     @FileUpload</#if>
-    public IView __create(<#list api.params as p><#if p.required?? && p.required>@VRequried</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>@VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.regex?? && (p.regex?length > 0)>
-                          @VRegex(regex = "${p.regex}")</#if><#if p.email?? && p.email>
-                          @VEmail</#if><#if p.mobile?? && p.mobile>
-                          @VMobile</#if><#if p.datetime?? && p.datetime>
-                          @VDateTime</#if><#if p.numeric?? && p.numeric>
-                          @VNumeric<#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>min = ${p.min})<#elseif (p.max?? && p.max > 0)>max = ${p.max})</#if> <#else><#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>
-                          @VLength(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>@VLength(min = ${p.min})<#elseif (p.max?? && p.max > 0)>@VLength(max = ${p.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
-                          @VField(label = "${p.label}")</#if> @RequestParam <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>,
+    public IView __create(<#list api.params as p><#if p.required?? && p.required>@VRequried</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
+                          @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
+                          @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
+                          @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
+                          @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
+                          @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
+                          @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                          @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>
+                          @VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>
+                          @VLength(max = ${p.validation.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
+                          @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>,
 
                           </#if></#list>) throws Exception {
+
         __repository.create(<#list api.params as p><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if><#if p_has_next>, </#if></#list>);
         return WebResult.SUCCESS().toJSON();
     }
@@ -118,70 +134,98 @@ public class ${api.name?cap_first}Controller {
     /**
      * 查询指定主键的记录详情
      *
-     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}</#if> ${api.primary.description}
+     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping("/detail")<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_DETAIL")</#if>
-    public IView __detail(@VRequried<#if api.primary.numeric?? && api.primary.numeric>
-                          @VNumeric<#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>max = ${api.primary.max})</#if> <#else><#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>
-                          @VLength(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>@VLength(min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>@VLength(max = ${api.primary.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
-                          @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name}) throws Exception {
+    public IView __detail(@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
+                          @VNumeric<#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>(max = ${api.primary.validation.max})</#if> <#else><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
+                          @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
+                          @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
+                          @VLength(max = ${api.primary.validation.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
+                          @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name}) throws Exception {
+
         return WebResult.SUCCESS().data(__repository.find(${api.primary.name})).toJSON();
     }
 
     /**
      * 更新指定主键的记录
      *
-     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}</#if> ${api.primary.description}
+     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
      <#if (api.params?? && api.params?size > 0)><#list api.params as p>
-     * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}</#if> ${p.description}
-     </#list></#if>
-     * @param lastModifyTime 记录最后修改时间(用于版本比较)
+     * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}</#if>
+     </#list></#if><#if api.timestamp>
+     * @param lastModifyTime 记录最后修改时间(用于版本比较)</#if>
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping(value = "/update", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_UPDATE")</#if><#if upload>
     @FileUpload</#if>
-    public IView __update(@VRequried<#if api.primary.numeric?? && api.primary.numeric>
-                          @VNumeric<#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>max = ${api.primary.max})</#if> <#else><#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>
-                          @VLength(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>@VLength(min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>@VLength(max = ${api.primary.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
-                          @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name},
+    public IView __update(@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
+                          @VNumeric<#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>(max = ${api.primary.validation.max})</#if> <#else><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
+                          @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
+                          @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
+                          @VLength(max = ${api.primary.validation.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
+                          @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name},
 
                           <#list api.params as p><#if p.required?? && p.required>
-                          @VRequried</#if><#if p.regex?? && (p.regex?length > 0)><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
-                          @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else>
-                          @VRegex(regex = "${p.regex}")</#if><#if p.email?? && p.email>
-                          @VEmail</#if><#if p.mobile?? && p.mobile>
-                          @VMobile</#if><#if p.datetime?? && p.datetime>
-                          @VDateTime</#if><#if p.numeric?? && p.numeric>
-                          @VNumeric<#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>min = ${p.min})<#elseif (p.max?? && p.max > 0)>max = ${p.max})</#if> <#else><#if ((p.min?? && p.min > 0) && (p.max?? && p.max > 0))>
-                          @VLength(min = #{p.min}, max = ${p.max})<#elseif (p.min?? && p.min > 0)>@VLength(min = ${p.min})<#elseif (p.max?? && p.max > 0)>@VLength(max = ${p.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
-                          @VField(label = "${p.label}")</#if> @RequestParam <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>,
+                          @VRequried</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
+                          @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
+                          @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
+                          @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
+                          @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
+                          @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
+                          @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                          @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>
+                          @VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>
+                          @VLength(max = ${p.validation.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
+                          @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>,
 
-                          </#if></#list>,
-                          @RequestParam(defaultValue = "0") Long lastModifyTime) throws Exception {
-        __repository.update(${api.primary.name}, <#list api.params as p><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if><#if p_has_next>, </#if></#list>, lastModifyTime);
+                          </#if></#list><#if api.timestamp>,
+
+                          @RequestParam long lastModifyTime</#if>) throws Exception {
+
+        __repository.update(${api.primary.name}, <#list api.params as p><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if><#if p_has_next>, </#if></#list><#if api.timestamp>, lastModifyTime</#if>);
         return WebResult.SUCCESS().toJSON();
     }</#if>
 
     /**
      * 删除指定主键的记录
      *
-     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}</#if> ${api.primary.description}
+     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping(value = "/remove", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_REMOVE")</#if>
-    public IView __remove(@VRequried<#if api.primary.numeric?? && api.primary.numeric>
-                          @VNumeric<#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>max = ${api.primary.max})</#if> <#else><#if ((api.primary.min?? && api.primary.min > 0) && (api.primary.max?? && api.primary.max > 0))>
-                          @VLength(min = #{api.primary.min}, max = ${api.primary.max})<#elseif (api.primary.min?? && api.primary.min > 0)>@VLength(min = ${api.primary.min})<#elseif (api.primary.max?? && api.primary.max > 0)>@VLength(max = ${api.primary.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
-                          @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name}) throws Exception {
+    public IView __remove(@VRequried<#if api.primary.validation??><#if api.primary.label?? && (api.primary.label?length > 0)>
+                          @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first}[] ${api.primary.name}) throws Exception {
+
         __repository.remove(${api.primary.name});
         return WebResult.SUCCESS().toJSON();
     }
+
+    <#if api.status?? && (api.status?size > 0)><#list api.status as p><#if p.enabled>
+
+    /**
+     * <#if p.description?? && (p.description?length > 0)>${p.description}<#else>设置指定主键记录的 ${p.column?upper_case} 字段值为 <#if (p.type?lower_case == 'string')>"${p.value}"<#else>${p.value}</#if></#if>
+     *
+     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${p.description}</#if>
+     * @param reason 原因说明
+     * @return 返回执行结果视图
+     * @throws Exception 可能产生的任何异常
+     */
+    @RequestMapping(value = "/status/${p.name?lower_case}", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
+    @Permission("${security.prefix}${api.name?upper_case}_STATUS_${p.name?upper_case}")</#if>
+    public IView __status${p.name?cap_first}(@VRequried<#if api.primary.label?? && (api.primary.label?length > 0)>
+                         @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first}[] ${api.primary.name},<#if p.reason> @VRequried</#if> @RequestParam String reason) throws Exception {
+
+        __repository.update(${api.primary.name}, ${api.model}.FIELDS.${p.column?upper_case}, <#if (p.type?lower_case == 'string')>"${p.value}"<#else>${p.value}</#if>);
+        return WebResult.SUCCESS().toJSON();
+    }
+    </#if></#list></#if>
 </#if>
 }

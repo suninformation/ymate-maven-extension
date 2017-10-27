@@ -11,6 +11,7 @@ import net.ymate.platform.core.util.UUIDUtils;
 import net.ymate.platform.persistence.Fields;
 import net.ymate.platform.persistence.IResultSet;
 import net.ymate.platform.persistence.Page;
+import net.ymate.platform.persistence.Params;
 import net.ymate.platform.persistence.jdbc.ISession;
 import net.ymate.platform.persistence.jdbc.ISessionExecutor;
 import net.ymate.platform.persistence.jdbc.JDBC;
@@ -45,26 +46,26 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }
 
     @Repository(item = "${api.name?lower_case}")
-    public IResultSet<Object[]> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>${p.type?cap_first} ${p.name}</#if><#if p_has_next>, </#if></#list>, </#if>int page, final int pageSize, IResultSet<Object[]>... results) throws Exception {
+    public IResultSet<Object[]> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>int page, final int pageSize, IResultSet<Object[]>... results) throws Exception {
         return results[0];
     }
 
     <#else>
-    protected <#if (api.primary.type?lower_case == 'string')>String<#else>${api.primary.type?cap_first}</#if> __buildPrimaryKey() {
+    private <#if (api.primary.type?lower_case == 'string')>String<#else>${api.primary.type?cap_first}</#if> __buildPrimaryKey() {
         return <#if (api.primary.type?lower_case == 'string')>UUIDUtils.UUID()<#else>null // TODO Build PrimaryKey for ${api.name?cap_first}</#if>;
     }
 
     <#if (api.params?? && api.params?size > 0)>@Override
     @Transaction
     public ${api.model} create(<#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>) throws Exception {
-        long _now = System.currentTimeMillis();
-        //
+        <#if api.timestamp>long _now = System.currentTimeMillis();
+        //</#if>
         ${api.model} _target = ${api.model}.builder().id(__buildPrimaryKey())
                 <#list api.params as p>
                 .${p.name}(${p.name})
-                </#list>
+                </#list><#if api.timestamp>
                 .createTime(_now)
-                .lastModifyTime(_now)
+                .lastModifyTime(_now)</#if>
                 .build();
         return _target.save();
     }</#if>
@@ -97,19 +98,45 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         });
     }
 
+    <#if api.status?? && (api.status?size > 0)>@Override
+    @Transaction
+    public int[] update(final ${api.primary.type?cap_first}[] ${api.primary.name}s, final String fieldName, final Object value) throws Exception {
+        if (ArrayUtils.isEmpty(${api.primary.name}s)) {
+            throw new NullArgumentException("${api.primary.name}s");
+        }
+        if (StringUtils.isBlank(fieldName)) {
+            throw new NullArgumentException("fieldName");
+        }
+        return JDBC.get().openSession(new ISessionExecutor<int[]>() {
+            @Override
+            public int[] execute(ISession session) throws Exception {
+                BatchSQL _batchSQL = BatchSQL.create(Update.create(session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix(), ${api.model}.class)
+                        .where(Where.create(Cond.create().eq(${api.model}.FIELDS.${api.primary.column?upper_case}))).field(fieldName).toString());
+                for (String _${api.primary.name} : ${api.primary.name}s) {
+                    _batchSQL.addParameter(Params.create(value, _${api.primary.name}));
+                }
+                return session.executeForUpdate(_batchSQL);
+            }
+        });
+    }</#if>
+
     <#if (api.params?? && api.params?size > 0)>@Override
     @Transaction
-    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>, long lastModifyTime) throws Exception {
+    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list><#if api.timestamp>, long lastModifyTime</#if>) throws Exception {
         ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.MYSQL);
-        if (lastModifyTime > 0 && BlurObject.bind(_target.getLastModifyTime()).toLongValue() != lastModifyTime) {
-            throw new DataVersionMismatchException("Data version mismatch.");
+        <#if api.timestamp>if (lastModifyTime > 0) {
+            long _current = BlurObject.bind(_target.getLastModifyTime()).toLongValue();
+            if (_current != lastModifyTime) {
+                throw new DataVersionMismatchException("Data version mismatch. last: " + lastModifyTime + ", current: " + _current);
+            }
         }
-        PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
+        </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
         _target = _state.bind().bind()
                 <#list api.params as p>
                 .${p.name}(${p.name})
-                </#list>
-                .lastModifyTime(System.currentTimeMillis()).build();
+                </#list><#if api.timestamp>
+                .lastModifyTime(System.currentTimeMillis())</#if>
+                .build();
         return _target.update(Fields.create(_state.getChangedPropertyNames()));
     }</#if>
 
@@ -122,32 +149,35 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }
 
     @Override
-    public IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter>final ${p.type?cap_first} ${p.name}</#if><#if p_has_next>, </#if></#list>, </#if>final Fields fields, final OrderBy orderBy, final int page, final int pageSize) throws Exception {
+    public IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>final ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, final ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>final Fields fields, final OrderBy orderBy, final int page, final int pageSize) throws Exception {
         return JDBC.get().openSession(new ISessionExecutor<IResultSet<${api.model}>>() {
             @Override
             public IResultSet<${api.model}> execute(ISession session) throws Exception {
-                Cond _cond = Cond.create();
-                <#if api.params?? && (api.params?size > 0)><#list api.params as p>
-                    <#if p.type?lower_case == 'string'>
+                Cond _cond = Cond.create().eqOne();
+                <#if api.params?? && (api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>
+                    <#if p.type?lower_case == 'string'><#if !p.filter.region>//
                     if (StringUtils.isNotBlank(${p.name})) {
                     <#if p.like?? && p.like>
-                        _cond.like(${api.model}.FIELDS.${p.column?upper_case}).param("%" + ${p.name} + "%");
+                        _cond.and().like(${api.model}.FIELDS.${p.column?upper_case}).param("%" + ${p.name} + "%");
                     <#else>
-                        _cond.eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
+                        _cond.and().eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
                     </#if>
                     }
-                    <#else>
+                    </#if><#else><#if p.filter.region && (p.type?lower_case == "integer" || p.type?lower_case == "long")>//
+                    if (begin${p.name?cap_first} != null && end${p.name?cap_first} != null) {
+                        _cond.and().between(${api.model}.FIELDS.${p.column?upper_case}, begin${p.name?cap_first}, end${p.name?cap_first});
+                    }
+                    <#else>//
                     if (${p.name} != null) {
-                        _cond.eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
+                        _cond.and().eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
                     }
-                    </#if>
-                </#list></#if>
-                //
+                    </#if></#if>
+                </#if></#list></#if>//
                 Where _where = Where.create(_cond);
                 if (orderBy != null) {
-                    _where.orderBy().orderBy(orderBy);
+                    _where.orderBy().orderBy(orderBy);<#if api.timestamp>
                 } else {
-                    _where.orderDesc(${api.model}.FIELDS.LAST_MODIFY_TIME);
+                    _where.orderDesc(${api.model}.FIELDS.LAST_MODIFY_TIME);</#if>
                 }
                 //
                 return session.find(Select.create(session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix(), ${api.model}.class)

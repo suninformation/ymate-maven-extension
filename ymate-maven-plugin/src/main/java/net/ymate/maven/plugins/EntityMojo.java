@@ -16,7 +16,6 @@
 package net.ymate.maven.plugins;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.core.support.ConfigBuilder;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.jdbc.scaffold.EntityGenerator;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -25,8 +24,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Properties;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 15/10/26 下午2:52
@@ -38,25 +35,18 @@ public class EntityMojo extends AbstractTmplMojo {
     @Parameter(property = "view")
     private boolean view;
 
+    @Parameter(property = "markdown")
+    private boolean markdown;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         YMP _owner = null;
         try {
-            File _propFile = new File(basedir, "/src/main/resources/ymp-conf.properties");
-            if (!_propFile.exists()) {
-                getLog().warn("Cannot found config file: " + _propFile);
-            } else {
-                Properties _props = new Properties();
-                _props.load(new FileInputStream(_propFile));
-                //
-                _props.remove("ymp.i18n_event_handler_class");
-                _props.remove("ymp.autoscan_packages");
-                _props.remove("ymp.configs.persistence.jdbc.ds.default.adapter_class");
-                _props.put("ymp.params.jdbc.output_path", new File(basedir, "/src/main/java").getPath());
-                //
-                _owner = new YMP(ConfigBuilder.create(_props).build()).init();
-                //
-                new EntityGenerator(_owner).createEntityClassFiles(view);
+            _owner = new YMP(__doCreateConfigBuilder().param("jdbc.output_path", new File(basedir, "/src/main/java").getPath()).build()).init();
+            EntityGenerator _generator = new EntityGenerator(_owner);
+            if (markdown) {
+                _generator.markdown();
             }
+            _generator.createEntityClassFiles(view);
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
         } finally {

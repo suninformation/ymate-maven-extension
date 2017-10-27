@@ -16,10 +16,19 @@
 package net.ymate.maven.plugins;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.parser.Feature;
-import org.apache.commons.io.IOUtils;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.util.ClassUtils;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.persistence.base.EntityMeta;
+import net.ymate.platform.persistence.jdbc.IDatabase;
+import net.ymate.platform.persistence.jdbc.JDBC;
+import net.ymate.platform.persistence.jdbc.scaffold.Attr;
+import net.ymate.platform.persistence.jdbc.scaffold.ColumnInfo;
+import net.ymate.platform.persistence.jdbc.scaffold.ConfigInfo;
+import net.ymate.platform.persistence.jdbc.scaffold.TableInfo;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -29,7 +38,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -42,33 +50,40 @@ public class CrudMojo extends AbstractTmplMojo {
     @Parameter(property = "file", defaultValue = "misc/crud.json")
     private String fileName;
 
-    @Parameter(property = "controller", defaultValue = "true")
-    private boolean controller;
+    @Parameter(property = "action")
+    private String action;
 
-    @Parameter(property = "repository", defaultValue = "true")
-    private boolean repository;
+    @Parameter(property = "fromDb")
+    private boolean fromDb;
+
+    @Parameter(property = "mapping", defaultValue = "v1")
+    private String mapping;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         File _cfgFile = new File(basedir, fileName);
         try {
             if (_cfgFile.exists() && _cfgFile.isFile()) {
-                ApplicationMeta _application = new ApplicationMeta(basedir, packageBase, projectName, version,
-                        JSON.parseObject(IOUtils.toString(new FileInputStream(_cfgFile), "UTF-8"), Feature.OrderedField));
+                ApplicationInfo _application = JSON.parseObject(new FileInputStream(_cfgFile), ApplicationInfo.class, Feature.OrderedField);
+                _application.checkDefaultValue(basedir, packageBase, projectName, version);
                 //
                 if (_application.isLocked()) {
                     getLog().info("CRUD has been locked.");
                 } else {
                     Map<String, Object> _sqlMap = new HashMap<String, Object>();
                     //
-                    for (ApiMeta _api : _application.getApis()) {
+                    for (ApiInfo _api : _application.getApis()) {
+                        _api.checkDefaultValue();
+                        //
+                        boolean _isQuery = StringUtils.equalsIgnoreCase(_api.getModel(), "query");
+                        //
                         Map<String, Object> _props = new HashMap<String, Object>();
                         _props.put("app", _application.toMap());
                         _props.put("api", _api.toMap());
-                        _props.put("security", _application.getSecurity());
+                        _props.put("security", _application.getSecurity().toMap());
                         _props.put("intercept", _application.getIntercept());
-                        _props.put("query", _api.isQuery());
+                        _props.put("query", _isQuery);
                         _props.put("upload", _api.isUpload());
-                        if (_api.isQuery()) {
+                        if (_isQuery) {
                             _sqlMap.put(_api.getName(), _api.getQuery());
                         }
                         if (_api.isLocked()) {
@@ -76,16 +91,16 @@ public class CrudMojo extends AbstractTmplMojo {
                         } else {
                             String _apiName = StringUtils.capitalize(_api.getName());
                             //
-                            if (controller) {
+                            if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
                                 __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
                             }
-                            if (repository) {
+                            if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
                                 __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
                                 __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
                             }
                         }
                     }
-                    if (repository && !_sqlMap.isEmpty()) {
+                    if ((StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) && !_sqlMap.isEmpty()) {
                         Map<String, Object> _props = new HashMap<String, Object>();
                         _props.put("app", _application.toMap());
                         _props.put("sqls", _sqlMap);
@@ -104,295 +119,947 @@ public class CrudMojo extends AbstractTmplMojo {
                 _props.put("projectName", projectName);
                 _props.put("packageName", packageBase);
                 _props.put("version", version);
+                //
+                if (fromDb) {
+                    _props.put("apis", __buildConfigFromDb());
+                }
                 __doWriteSingleFile(_cfgFile, "crud/crud-config-tmpl", _props);
             }
-        } catch (IOException e) {
-            throw new MojoExecutionException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        }
+    }
+
+    private String __buildConfigFromDb() throws Exception {
+        YMP _owner = null;
+        try {
+            _owner = new YMP(__doCreateConfigBuilder().build()).init();
+            IDatabase _database = JDBC.get(_owner);
+            //
+            ConfigInfo _config = new ConfigInfo(_owner);
+            //
+            StringBuilder _apisSB = new StringBuilder();
+            //
+            mapping = StringUtils.defaultIfBlank(mapping, "v1");
+            if (StringUtils.startsWith(mapping, "/")) {
+                mapping = mapping.substring(1);
+            }
+            //
+            List<String> _tables = TableInfo.getTableNames(_database);
+            for (String _tableName : _tables) {
+                TableInfo _tableInfo = TableInfo.create(_database.getDefaultConnectionHolder(), _config, _tableName, false);
+                if (_tableInfo != null) {
+                    ApiInfo _info = new ApiInfo();
+                    //
+                    String _name = _config.buildModelName(_tableName);
+                    //
+                    _info.setName(StringUtils.uncapitalize(_name));
+                    _info.setMapping("/" + mapping + "/" + EntityMeta.fieldNameToPropertyName(_info.getName(), 0).replace('_', '/'));
+                    _info.setModel(packageBase + ".model." + _name + (_config.isUseClassSuffix() ? "Model" : ""));
+                    _info.setQuery("");
+                    _info.setLocked(false);
+                    _info.setTimestamp(_tableInfo.getFieldMap().containsKey("create_time"));
+                    _info.setDescription("");
+                    //
+                    if (_tableInfo.getFieldMap() != null && !_tableInfo.getFieldMap().isEmpty() && _tableInfo.getPkSet() != null && !_tableInfo.getPkSet().isEmpty()) {
+                        ColumnInfo _primaryColumn = _tableInfo.getFieldMap().get(_tableInfo.getPkSet().get(0));
+                        if (_primaryColumn != null) {
+                            _info.setPrimary(new ApiParameter(_primaryColumn));
+                            //
+                            List<ApiParameter> _params = new ArrayList<ApiParameter>();
+                            for (ColumnInfo _column : _tableInfo.getFieldMap().values()) {
+                                if (!_column.isPrimaryKey()) {
+                                    _params.add(new ApiParameter(_column));
+                                }
+                            }
+                            _info.setParams(_params);
+                            _info.setStatus(Collections.<StatusInfo>emptyList());
+                            //
+                            if (_apisSB.length() > 0) {
+                                _apisSB.append(",\r\n\t\t");
+                            }
+                            _apisSB.append(JSON.toJSONString(_info, SerializerFeature.SortField, SerializerFeature.MapSortField, SerializerFeature.PrettyFormat));
+                        }
+                    }
+                }
+            }
+            return _apisSB.toString();
+        } catch (Exception e) {
+            throw new MojoExecutionException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
+        } finally {
+            if (_owner != null) {
+                try {
+                    _owner.destroy();
+                } catch (Exception ignored) {
+                }
+            }
         }
     }
 
     //
 
-    static class ApplicationMeta {
+    public static class ApplicationInfo {
 
-        private Map<String, Object> __attrs = new HashMap<String, Object>();
+        private String name;
 
-        private List<ApiMeta> __apis = new ArrayList<ApiMeta>();
+        private String packageName;
 
-        private Map<String, Object> __security = new HashMap<String, Object>();
+        private String version;
 
-        private Map<String, Object> __intercept = new HashMap<String, Object>();
+        private String author;
+
+        private String createTime;
+
+        private boolean locked;
+
+        private List<ApiInfo> apis;
+
+        private SecurityInfo security;
+
+        private InterceptInfo intercept;
 
         private String __basePath;
 
-        ApplicationMeta(String basedir, String packageBase, String projectBase, String versionBase, JSONObject config) {
-            __basePath = basedir;
-            JSONObject _application = config.getJSONObject("application");
-            if (_application == null) {
-                _application = new JSONObject();
-            }
-            __attrs.put("name", StringUtils.defaultIfBlank(_application.getString("name"), projectBase));
-            __attrs.put("packageName", StringUtils.defaultIfBlank(_application.getString("package"), packageBase));
-            __attrs.put("version", StringUtils.defaultIfBlank(_application.getString("version"), versionBase));
-            __attrs.put("author", StringUtils.defaultIfBlank(_application.getString("author"), "ymatescaffold"));
-            __attrs.put("createTime", _application.getString("createTime"));
-            __attrs.put("locked", _application.getBooleanValue("locked"));
+        public ApplicationInfo() {
+        }
+
+        public void checkDefaultValue(String basedir, String packageBase, String projectBase, String versionBase) {
+            this.__basePath = basedir;
             //
-            JSONArray _apis = config.getJSONArray("apis");
-            if (_apis != null && !_apis.isEmpty()) {
-                for (int _idx = 0; _idx < _apis.size(); _idx++) {
-                    __apis.add(new ApiMeta(_apis.getJSONObject(_idx)));
-                }
+            this.name = StringUtils.defaultIfBlank(this.name, projectBase);
+            this.packageName = StringUtils.defaultIfBlank(this.packageName, packageBase);
+            this.version = StringUtils.defaultIfBlank(this.version, versionBase);
+            this.author = StringUtils.defaultIfBlank(this.author, "ymatescaffold");
+            //
+            if (this.apis == null) {
+                this.apis = new ArrayList<ApiInfo>();
             }
             //
-            JSONObject _security = config.getJSONObject("security");
-            boolean _enabled = _security != null && _security.getBooleanValue("enabled");
-            __security.put("enabled", _enabled);
-            if (_enabled) {
-                __security.put("name", _security.getString("name"));
-                __security.put("prefix", StringUtils.trimToEmpty(_security.getString("prefix")).toUpperCase());
-                //
-                JSONObject _roles = _security.getJSONObject("roles");
-                if (_roles != null && (_roles.getBooleanValue("admin") || _roles.getBooleanValue("operator") || _roles.getBooleanValue("user"))) {
-                    List<String> _roleList = new ArrayList<String>();
-                    if (_roles.getBooleanValue("admin")) {
-                        _roleList.add("ISecurity.Role.ADMIN");
-                    }
-                    if (_roles.getBooleanValue("operator")) {
-                        _roleList.add("ISecurity.Role.OPERATOR");
-                    }
-                    if (_roles.getBooleanValue("user")) {
-                        _roleList.add("ISecurity.Role.USER");
-                    }
-                    __security.put("roles", _roleList.toArray());
-                }
-                //
-                JSONArray _permissions = _security.getJSONArray("permissions");
-                if (_permissions != null && !_permissions.isEmpty()) {
-                    List<String> _pList = new ArrayList<String>();
-                    for (int _idx = 0; _idx < _permissions.size(); _idx++) {
-                        _pList.add(_permissions.getString(_idx).toUpperCase());
-                    }
-                    __security.put("permissions", _pList.toArray());
-                }
+            if (this.security == null) {
+                this.security = new SecurityInfo();
+            } else {
+                this.security.checkDefaultValue();
             }
             //
-            JSONObject _intercept = config.getJSONObject("intercept");
-            if (_intercept != null) {
-                JSONArray _before = _intercept.getJSONArray("before");
-                if (_before != null && !_before.isEmpty()) {
-                    __intercept.put("before", _before.toArray());
-                }
-                //
-                JSONArray _after = _intercept.getJSONArray("after");
-                if (_after != null && !_after.isEmpty()) {
-                    __intercept.put("after", _after.toArray());
-                }
-                //
-                JSONArray _around = _intercept.getJSONArray("around");
-                if (_around != null && !_around.isEmpty()) {
-                    __intercept.put("around", _around.toArray());
-                }
-                //
-                JSONObject _params = _intercept.getJSONObject("params");
-                if (_params != null && !_params.isEmpty()) {
-                    Map<String, Object> _paramMap = new HashMap<String, Object>();
-                    for (Map.Entry<String, Object> _entry : _params.entrySet()) {
-                        if (_entry.getValue() != null) {
-                            _paramMap.put(_entry.getKey(), _entry.getValue());
-                        }
-                    }
-                    if (!_paramMap.isEmpty()) {
-                        __intercept.put("params", _paramMap);
-                    }
-                }
+            if (this.intercept == null) {
+                this.intercept = new InterceptInfo();
             }
         }
 
-        File buildJavaFilePath(String filePathName) {
-            File _base = new File(__basePath + "/src/main/java", ((String) __attrs.get("packageName")).replace(".", "/"));
+        public File buildJavaFilePath(String filePathName) {
+            File _base = new File(this.__basePath + "/src/main/java", this.packageName.replace(".", "/"));
             return new File(_base, filePathName);
         }
 
-        File buildResourceFilePath(String filePathName) {
-            return new File(__basePath + "/src/main/webapp/WEB-INF/", filePathName);
+        public File buildResourceFilePath(String filePathName) {
+            return new File(this.__basePath + "/src/main/webapp/WEB-INF/", filePathName);
         }
 
-        String getName() {
-            return (String) __attrs.get("name");
+        public String getName() {
+            return name;
         }
 
-        boolean isLocked() {
-            return (Boolean) __attrs.get("locked");
+        public void setName(String name) {
+            this.name = name;
         }
 
-        List<ApiMeta> getApis() {
-            return __apis;
+        public String getPackageName() {
+            return packageName;
         }
 
-        Map<String, Object> getSecurity() {
-            return __security;
+        public void setPackageName(String packageName) {
+            this.packageName = packageName;
         }
 
-        Map<String, Object> getIntercept() {
-            return __intercept;
+        public String getVersion() {
+            return version;
         }
 
-        Map<String, Object> toMap() {
-            return __attrs;
+        public void setVersion(String version) {
+            this.version = version;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public void setAuthor(String author) {
+            this.author = author;
+        }
+
+        public String getCreateTime() {
+            return createTime;
+        }
+
+        public void setCreateTime(String createTime) {
+            this.createTime = createTime;
+        }
+
+        public boolean isLocked() {
+            return locked;
+        }
+
+        public void setLocked(boolean locked) {
+            this.locked = locked;
+        }
+
+        public List<ApiInfo> getApis() {
+            return apis;
+        }
+
+        public void setApis(List<ApiInfo> apis) {
+            this.apis = apis;
+        }
+
+        public SecurityInfo getSecurity() {
+            return security;
+        }
+
+        public void setSecurity(SecurityInfo security) {
+            this.security = security;
+        }
+
+        public InterceptInfo getIntercept() {
+            return intercept;
+        }
+
+        public void setIntercept(InterceptInfo intercept) {
+            this.intercept = intercept;
+        }
+
+        public Map<String, Object> toMap() {
+            return ClassUtils.wrapper(this).toMap();
         }
     }
 
-    static class ApiMeta {
+    public static class SecurityInfo {
 
-        private Map<String, Object> __attrs = new LinkedHashMap<String, Object>();
+        private boolean enabled;
 
-        private boolean __query;
+        private String name;
 
-        private boolean __upload;
+        private String prefix;
 
-        ApiMeta(JSONObject config) {
-            if (config == null) {
-                throw new NullArgumentException("config");
+        private RoleInfo roles;
+
+        private List<String> permissions;
+
+        public SecurityInfo() {
+        }
+
+        public void checkDefaultValue() {
+            if (this.enabled) {
+                this.prefix = StringUtils.trimToEmpty(prefix).toUpperCase();
+                //
+                if (this.permissions == null) {
+                    this.permissions = new ArrayList<String>();
+                }
             }
-            String _name = config.getString("name");
-            if (StringUtils.isBlank(_name)) {
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
+        }
+
+        public RoleInfo getRoles() {
+            return roles;
+        }
+
+        public void setRoles(RoleInfo roles) {
+            this.roles = roles;
+        }
+
+        public List<String> getPermissions() {
+            return permissions;
+        }
+
+        public void setPermissions(List<String> permissions) {
+            this.permissions = permissions;
+        }
+
+        public Map<String, Object> toMap() {
+            Map<String, Object> _returnValue = ClassUtils.wrapper(this).toMap(new ClassUtils.IFieldValueFilter() {
+                public boolean filter(String fieldName, Object fieldValue) {
+                    return fieldName.equals("roles");
+                }
+            });
+            _returnValue.put("roles", roles.toArray());
+            //
+            return _returnValue;
+        }
+    }
+
+    public static class RoleInfo {
+
+        private boolean admin;
+
+        private boolean operator;
+
+        private boolean user;
+
+        public RoleInfo() {
+        }
+
+        public boolean isAdmin() {
+            return admin;
+        }
+
+        public void setAdmin(boolean admin) {
+            this.admin = admin;
+        }
+
+        public boolean isOperator() {
+            return operator;
+        }
+
+        public void setOperator(boolean operator) {
+            this.operator = operator;
+        }
+
+        public boolean isUser() {
+            return user;
+        }
+
+        public void setUser(boolean user) {
+            this.user = user;
+        }
+
+        public String[] toArray() {
+            List<String> _roleList = new ArrayList<String>();
+            if (this.admin) {
+                _roleList.add("ISecurity.Role.ADMIN");
+            }
+            if (this.operator) {
+                _roleList.add("ISecurity.Role.OPERATOR");
+            }
+            if (this.user) {
+                _roleList.add("ISecurity.Role.USER");
+            }
+            return _roleList.toArray(new String[0]);
+        }
+    }
+
+    public static class InterceptInfo {
+
+        private List<String> before;
+
+        private List<String> after;
+
+        private List<String> around;
+
+        private Map<String, String> params;
+
+        public InterceptInfo() {
+        }
+
+        public List<String> getBefore() {
+            return before;
+        }
+
+        public void setBefore(List<String> before) {
+            this.before = before;
+        }
+
+        public List<String> getAfter() {
+            return after;
+        }
+
+        public void setAfter(List<String> after) {
+            this.after = after;
+        }
+
+        public List<String> getAround() {
+            return around;
+        }
+
+        public void setAround(List<String> around) {
+            this.around = around;
+        }
+
+        public Map<String, String> getParams() {
+            return params;
+        }
+
+        public void setParams(Map<String, String> params) {
+            this.params = params;
+        }
+
+        public Map<String, Object> toMap() {
+            return ClassUtils.wrapper(this).toMap();
+        }
+    }
+
+    public static class StatusInfo {
+
+        private boolean enabled;
+
+        private String name;
+
+        private String column;
+
+        private String type;
+
+        private String value;
+
+        private boolean reason;
+
+        private String description;
+
+        public void checkDefaultValue() {
+            if (this.enabled) {
+                if (StringUtils.isBlank(this.name)) {
+                    throw new NullArgumentException("STATUS name");
+                } else {
+                    this.name = StringUtils.replace(this.name, "/", "_");
+                    this.name = EntityMeta.propertyNameToFieldName(this.name);
+                }
+                if (StringUtils.isBlank(this.column)) {
+                    throw new NullArgumentException("STATUS column");
+                }
+                this.type = StringUtils.defaultIfBlank(this.type, "string");
+                if (StringUtils.isBlank(this.value)) {
+                    throw new NullArgumentException("STATUS value");
+                }
+            }
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getColumn() {
+            return column;
+        }
+
+        public void setColumn(String column) {
+            this.column = column;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        public boolean isReason() {
+            return reason;
+        }
+
+        public void setReason(boolean reason) {
+            this.reason = reason;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+    }
+
+    public static class ApiInfo {
+
+        private String name;
+
+        private String mapping;
+
+        private String type;
+
+        private String model;
+
+        private String query;
+
+        private ApiParameter primary;
+
+        private List<ApiParameter> params;
+
+        private List<StatusInfo> status;
+
+        private boolean locked;
+
+        private boolean timestamp;
+
+        @JSONField(serialize = false)
+        private boolean upload;
+
+        private String description;
+
+        public ApiInfo() {
+        }
+
+        public void checkDefaultValue() {
+            if (StringUtils.isBlank(this.name)) {
                 throw new IllegalArgumentException("API name can not null.");
             }
-            __attrs.put("name", _name);
-            //
-            String _mapping = StringUtils.defaultIfBlank(config.getString("mapping"), _name.toLowerCase());
+            String _mapping = StringUtils.defaultIfBlank(this.mapping, this.name.toLowerCase());
             if (!StringUtils.startsWith(_mapping, "/")) {
-                _mapping = "/" + _mapping;
+                this.mapping = "/" + _mapping;
             }
-            __attrs.put("mapping", _mapping);
-            //
-            String _type = StringUtils.defaultIfBlank(config.getString("type"), "model");
-            __attrs.put("type", _type);
-            //
-            if (StringUtils.equalsIgnoreCase(_type, "model")) {
-                String _model = config.getString("model");
-                if (StringUtils.isBlank(_model)) {
+            this.type = StringUtils.defaultIfBlank(this.type, "model");
+            if (StringUtils.equalsIgnoreCase(this.type, "model") || StringUtils.equalsIgnoreCase(this.type, "query")) {
+                if (StringUtils.equalsIgnoreCase(this.type, "model") && StringUtils.isBlank(this.model)) {
                     throw new IllegalArgumentException("API model can not null.");
-                }
-                __attrs.put("model", _model);
-            } else if (StringUtils.equalsIgnoreCase(_type, "query")) {
-                String _query = config.getString("query");
-                if (StringUtils.isBlank(_query)) {
+                } else if (StringUtils.equalsIgnoreCase(this.type, "query") && StringUtils.isBlank(this.query)) {
                     throw new IllegalArgumentException("API query can not null.");
                 }
-                __attrs.put("query", _query);
-                __query = true;
             } else {
-                throw new IllegalArgumentException("API model or query can not null.");
+                throw new IllegalArgumentException("API model illegal.");
             }
-            //
-            __attrs.put("locked", config.getBooleanValue("locked"));
-            __attrs.put("description", config.getString("description"));
-            //
-            JSONObject _primary = config.getJSONObject("primary");
-            if (_primary == null) {
-                throw new NullArgumentException("primary");
+            if (this.primary == null) {
+                throw new NullArgumentException("API primary");
+            } else {
+                this.primary.checkDefaultValue();
             }
-            __attrs.put("primary", new ApiParameter(_primary).toMap());
-            //
-            JSONArray _params = config.getJSONArray("params");
-            if (_params != null && !_params.isEmpty()) {
-                List<Map<String, Object>> _paramList = new ArrayList<Map<String, Object>>();
-                for (int _idx = 0; _idx < _params.size(); _idx++) {
-                    ApiParameter _param = new ApiParameter(_params.getJSONObject(_idx));
-                    if (_param.isUpload()) {
-                        __upload = true;
+            if (this.params != null && !this.params.isEmpty()) {
+                for (ApiParameter _param : this.params) {
+                    _param.checkDefaultValue();
+                    //
+                    if (_param.upload.enabled) {
+                        this.upload = true;
                     }
-                    _paramList.add(_param.toMap());
                 }
-                __attrs.put("params", _paramList);
+            }
+            if (this.status != null && !this.status.isEmpty()) {
+                for (StatusInfo _status : this.status) {
+                    _status.checkDefaultValue();
+                }
             }
         }
 
-        String getName() {
-            return (String) __attrs.get("name");
+        public String getName() {
+            return name;
         }
 
-        String getQuery() {
-            return (String) __attrs.get("query");
+        public void setName(String name) {
+            this.name = name;
         }
 
-        boolean isQuery() {
-            return __query;
+        public String getMapping() {
+            return mapping;
         }
 
-        boolean isLocked() {
-            return (Boolean) __attrs.get("locked");
+        public void setMapping(String mapping) {
+            this.mapping = mapping;
         }
 
-        boolean isUpload() {
-            return __upload;
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getModel() {
+            return model;
+        }
+
+        public void setModel(String model) {
+            this.model = model;
+        }
+
+        public String getQuery() {
+            return query;
+        }
+
+        public void setQuery(String query) {
+            this.query = query;
+        }
+
+        public ApiParameter getPrimary() {
+            return primary;
+        }
+
+        public void setPrimary(ApiParameter primary) {
+            this.primary = primary;
+        }
+
+        public List<ApiParameter> getParams() {
+            return params;
+        }
+
+        public void setParams(List<ApiParameter> params) {
+            this.params = params;
+        }
+
+        public List<StatusInfo> getStatus() {
+            return status;
+        }
+
+        public void setStatus(List<StatusInfo> status) {
+            this.status = status;
+        }
+
+        public boolean isLocked() {
+            return locked;
+        }
+
+        public void setLocked(boolean locked) {
+            this.locked = locked;
+        }
+
+        public boolean isTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(boolean timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        public boolean isUpload() {
+            return upload;
+        }
+
+        public void setUpload(boolean upload) {
+            this.upload = upload;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         Map<String, Object> toMap() {
-            return __attrs;
+            return ClassUtils.wrapper(this).toMap();
         }
     }
 
-    static class ApiParameter {
+    public static class UploadInfo {
 
-        private Map<String, Object> __attrs = new HashMap<String, Object>();
+        private boolean enabled;
 
-        private boolean __upload;
+        private List<String> contentTypes;
 
-        ApiParameter(JSONObject config) {
-            if (config == null) {
-                throw new NullArgumentException("config");
-            }
-            String _name = config.getString("name");
-            if (StringUtils.isBlank(_name)) {
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public List<String> getContentTypes() {
+            return contentTypes;
+        }
+
+        public void setContentTypes(List<String> contentTypes) {
+            this.contentTypes = contentTypes;
+        }
+    }
+
+    public static class ValidationInfo {
+
+        private int max;
+
+        private int min;
+
+        private String regex;
+
+        private boolean mobile;
+
+        private boolean email;
+
+        private boolean numeric;
+
+        private boolean datetime;
+
+        public ValidationInfo() {
+        }
+
+        public int getMax() {
+            return max;
+        }
+
+        public void setMax(int max) {
+            this.max = max;
+        }
+
+        public int getMin() {
+            return min;
+        }
+
+        public void setMin(int min) {
+            this.min = min;
+        }
+
+        public String getRegex() {
+            return regex;
+        }
+
+        public void setRegex(String regex) {
+            this.regex = regex;
+        }
+
+        public boolean isMobile() {
+            return mobile;
+        }
+
+        public void setMobile(boolean mobile) {
+            this.mobile = mobile;
+        }
+
+        public boolean isEmail() {
+            return email;
+        }
+
+        public void setEmail(boolean email) {
+            this.email = email;
+        }
+
+        public boolean isNumeric() {
+            return numeric;
+        }
+
+        public void setNumeric(boolean numeric) {
+            this.numeric = numeric;
+        }
+
+        public boolean isDatetime() {
+            return datetime;
+        }
+
+        public void setDatetime(boolean datetime) {
+            this.datetime = datetime;
+        }
+    }
+
+    public static class FilterInfo {
+
+        private boolean enabled;
+
+        private boolean like;
+
+        private boolean region;
+
+        public FilterInfo() {
+        }
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public boolean isLike() {
+            return like;
+        }
+
+        public void setLike(boolean like) {
+            this.like = like;
+        }
+
+        public boolean isRegion() {
+            return region;
+        }
+
+        public void setRegion(boolean region) {
+            this.region = region;
+        }
+    }
+
+    public static class ApiParameter {
+
+        private String name;
+
+        private String column;
+
+        private String label;
+
+        private String type;
+
+        private boolean required;
+
+        private String defaultValue;
+
+        private ValidationInfo validation;
+
+        private FilterInfo filter;
+
+        private UploadInfo upload;
+
+        private String description;
+
+        public ApiParameter() {
+        }
+
+        public ApiParameter(ColumnInfo columnInfo) {
+            Attr _attr = columnInfo.toAttr();
+            //
+            this.name = _attr.getVarName();
+            this.required = columnInfo.isPrimaryKey() || !columnInfo.isNullable();
+            this.column = _attr.getColumnName();
+            this.label = StringUtils.trimToEmpty(_attr.getRemarks());
+            this.type = StringUtils.lowerCase(StringUtils.substringAfterLast(_attr.getVarType(), "."));
+            this.defaultValue = StringUtils.trimToEmpty(_attr.getDefaultValue());
+            //
+            this.validation = new ValidationInfo();
+            this.validation.numeric = !StringUtils.equals(this.type, "string") && !StringUtils.equals(this.type, "boolean");
+            this.validation.max = _attr.getPrecision();
+            //
+            this.filter = new FilterInfo();
+            this.filter.enabled = !columnInfo.isPrimaryKey();
+            //
+            this.upload = new UploadInfo();
+            this.upload.setContentTypes(Collections.<String>emptyList());
+            //
+            this.description = StringUtils.trimToEmpty(_attr.getRemarks());
+        }
+
+        public void checkDefaultValue() {
+            if (StringUtils.isBlank(this.name)) {
                 throw new IllegalArgumentException("PARAM name can not null.");
             }
-            __attrs.put("name", _name);
-            //
-            String _column = config.getString("column");
-            if (StringUtils.isBlank(_column)) {
+            if (StringUtils.isBlank(this.column)) {
                 throw new IllegalArgumentException("PARAM column can not null.");
             }
-            __attrs.put("column", _column);
+            this.label = StringUtils.trimToEmpty(this.label);
+            this.type = StringUtils.defaultIfBlank(this.type, "string");
             //
-            __attrs.put("label", StringUtils.trimToEmpty(config.getString("label")));
-            __attrs.put("type", StringUtils.defaultIfBlank(config.getString("type"), "string"));
-            __attrs.put("max", config.getIntValue("max"));
-            __attrs.put("min", config.getIntValue("min"));
-            __attrs.put("regex", StringUtils.trimToEmpty(config.getString("regex")));
-            __attrs.put("numeric", config.getBooleanValue("numeric"));
-            __attrs.put("datetime", config.getBooleanValue("datetime"));
-            __attrs.put("required", config.getBooleanValue("required"));
-            __attrs.put("filter", config.getBooleanValue("filter"));
-            __attrs.put("like", config.getBooleanValue("like"));
-            //
-            Map<String, Object> _uploadMap = new HashMap<String, Object>();
-            JSONObject _upload = config.getJSONObject("upload");
-            if (_upload != null && _upload.getBooleanValue("enabled")) {
-                __upload = true;
-                JSONArray _types = _upload.getJSONArray("contentTypes");
-                List<String> _contentTypes = new ArrayList<String>();
-                if (_types != null) {
-                    for (int _idx = 0; _idx < _types.size(); _idx++) {
-                        _contentTypes.add(_types.getString(_idx));
-                    }
-                }
-                _uploadMap.put("contentTypes", _contentTypes);
-                //
+            if (this.validation == null) {
+                this.validation = new ValidationInfo();
             }
-            _uploadMap.put("enabled", __upload);
-            __attrs.put("upload", _uploadMap);
-            __attrs.put("description", StringUtils.trimToEmpty(config.getString("description")));
+            //
+            if (this.filter == null) {
+                this.filter = new FilterInfo();
+            }
+            //
+            if (this.upload == null) {
+                this.upload = new UploadInfo();
+            }
+            this.defaultValue = StringUtils.trimToEmpty(this.defaultValue);
+            this.description = StringUtils.trimToEmpty(this.description);
         }
 
-        boolean isUpload() {
-            return __upload;
+        public String getName() {
+            return name;
         }
 
-        Map<String, Object> toMap() {
-            return __attrs;
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getColumn() {
+            return column;
+        }
+
+        public void setColumn(String column) {
+            this.column = column;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public boolean isRequired() {
+            return required;
+        }
+
+        public void setRequired(boolean required) {
+            this.required = required;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+
+        public void setDefaultValue(String defaultValue) {
+            this.defaultValue = defaultValue;
+        }
+
+        public ValidationInfo getValidation() {
+            return validation;
+        }
+
+        public void setValidation(ValidationInfo validation) {
+            this.validation = validation;
+        }
+
+        public FilterInfo getFilter() {
+            return filter;
+        }
+
+        public void setFilter(FilterInfo filter) {
+            this.filter = filter;
+        }
+
+        public UploadInfo getUpload() {
+            return upload;
+        }
+
+        public void setUpload(UploadInfo upload) {
+            this.upload = upload;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public Map<String, Object> toMap() {
+            return ClassUtils.wrapper(this).toMap();
         }
     }
 }

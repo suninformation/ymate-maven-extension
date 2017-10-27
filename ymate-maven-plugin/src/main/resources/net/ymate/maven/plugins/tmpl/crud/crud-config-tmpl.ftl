@@ -25,7 +25,7 @@
         "params": {}
     },
     "apis": [
-        {
+        <#if apis??>${apis}<#else>{
             "name": "",
             "mapping": "",
             "type": "model",
@@ -33,30 +33,62 @@
             "query": "",
             "description": "",
             "locked": false,
+            "timestamp": false,
+            "status": [
+                {
+                    "enabled": false,
+                    "name": "delete",
+                    "column": "is_deleted",
+                    "type": "integer",
+                    "value": "1",
+                    "reason": false,
+                    "description": ""
+                },
+                {
+                    "enabled": false,
+                    "name": "restore",
+                    "column": "is_deleted",
+                    "type": "integer",
+                    "value": "0",
+                    "reason": false,
+                    "description": ""
+                }
+            ]
             "primary": {
+                "name": "",
                 "label": "",
                 "column": "",
-                "name": "",
                 "type": "string",
-                "max": 0,
-                "min": 0,
-                "numeric": false,
+                "validation": {
+                    "max": 0,
+                    "min": 0,
+                    "regex": "",
+                    "numeric": false
+                },
                 "description": ""
             },
             "params": [
                 {
-                    "label": "",
                     "name": "",
+                    "label": "",
                     "column": "",
                     "type": "string",
-                    "max": 0,
-                    "min": 0,
-                    "numeric": false,
-                    "datetime": false,
-                    "regex": "",
-                    "required": true,
-                    "filter": true,
-                    "like": false,
+                    "required": false,
+                    "defaultValue": "",
+                    "validation": {
+                        "max": 0,
+                        "min": 0,
+                        "regex": "",
+                        "mobile": false,
+                        "email": false,
+                        "numeric": false,
+                        "datetime": false
+                    },
+                    "filter": {
+                        "enabled": false,
+                        "like": false,
+                        "region": false
+                    },
                     "upload": {
                         "enabled": false,
                         "contentTypes": []
@@ -64,6 +96,6 @@
                     "description": ""
                 }
             ]
-        }
+        }</#if>
     ]
 }
