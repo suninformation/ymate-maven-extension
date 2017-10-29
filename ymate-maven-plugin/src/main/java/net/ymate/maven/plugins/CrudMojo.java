@@ -20,6 +20,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.lang.PairObject;
 import net.ymate.platform.core.util.ClassUtils;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.persistence.base.EntityMeta;
@@ -151,11 +152,11 @@ public class CrudMojo extends AbstractTmplMojo {
                 if (_tableInfo != null) {
                     ApiInfo _info = new ApiInfo();
                     //
-                    String _name = _config.buildModelName(_tableName);
+                    PairObject<String, String> _name = _config.buildNamePrefix(_tableName);
                     //
-                    _info.setName(StringUtils.uncapitalize(_name));
+                    _info.setName(StringUtils.uncapitalize(_name.getKey()));
                     _info.setMapping("/" + mapping + "/" + EntityMeta.fieldNameToPropertyName(_info.getName(), 0).replace('_', '/'));
-                    _info.setModel(packageBase + ".model." + _name + (_config.isUseClassSuffix() ? "Model" : ""));
+                    _info.setModel(packageBase + ".model." + _name.getKey() + (_config.isUseClassSuffix() ? "Model" : ""));
                     _info.setQuery("");
                     _info.setLocked(false);
                     _info.setTimestamp(_tableInfo.getFieldMap().containsKey("create_time"));
