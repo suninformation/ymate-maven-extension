@@ -57,13 +57,13 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if (api.params?? && api.params?size > 0)>@Override
     @Transaction
-    public ${api.model} create(<#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list>) throws Exception {
+    public ${api.model} create(<#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list>) throws Exception {
         <#if api.timestamp>long _now = System.currentTimeMillis();
         //</#if>
         ${api.model} _target = ${api.model}.builder().id(__buildPrimaryKey())
-                <#list api.params as p>
+                <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
                 .${p.name}(${p.name})
-                </#list><#if api.timestamp>
+                </#if></#list><#if api.timestamp>
                 .createTime(_now)
                 .lastModifyTime(_now)</#if>
                 .build();
@@ -122,7 +122,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if (api.params?? && api.params?size > 0)>@Override
     @Transaction
-    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}<#if p_has_next>, </#if></#list><#if api.timestamp>, long lastModifyTime</#if>) throws Exception {
+    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list><#if api.timestamp>, long lastModifyTime</#if>) throws Exception {
         ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.MYSQL);
         <#if api.timestamp>if (lastModifyTime > 0) {
             long _current = BlurObject.bind(_target.getLastModifyTime()).toLongValue();
@@ -132,9 +132,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         }
         </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
         _target = _state.bind().bind()
-                <#list api.params as p>
+                <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
                 .${p.name}(${p.name})
-                </#list><#if api.timestamp>
+                </#if></#list><#if api.timestamp>
                 .lastModifyTime(System.currentTimeMillis())</#if>
                 .build();
         return _target.update(Fields.create(_state.getChangedPropertyNames()));
