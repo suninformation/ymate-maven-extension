@@ -20,7 +20,7 @@ import java.util.*;
  * @version 1.0
  */
 <#compress>
-@Controller<#if singleton>(singleton = true)</#if>
+@Controller<#if !singleton>(singleton = false)</#if>
 <@compress single_line=true>
 <#if (mapping?? && mapping.mapping??)>@RequestMapping(value = "${mapping.mapping}"<#if (mapping.method?size > 0)>, method = {<#list mapping.method as m>Type.HttpMethod.${m?upper_case}<#if m_has_next>, </#if></#list>}</#if>
 <#if (mapping.header?size > 0)>, header = {<#list mapping.header as h>"${h}"<#if h_has_next>, </#if></#list>}</#if>

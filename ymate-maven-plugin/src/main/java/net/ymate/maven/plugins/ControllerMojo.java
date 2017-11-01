@@ -53,9 +53,9 @@ public class ControllerMojo extends AbstractTmplMojo {
     private String suffix;
 
     /**
-     * 控制器是否为单例
+     * 控制器是否为单例, 默认为true
      */
-    @Parameter(property = "singleton")
+    @Parameter(property = "singleton", defaultValue = "true")
     private boolean singleton;
 
     /**
