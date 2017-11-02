@@ -53,7 +53,7 @@
                     "reason": false,
                     "description": ""
                 }
-            ]
+            ],
             "primary": {
                 "name": "",
                 "label": "",

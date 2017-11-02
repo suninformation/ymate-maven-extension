@@ -107,8 +107,8 @@
         </Connector>
         -->
 
-        <!-- Define an AJP 1.3 Connector on port 8009 -->
-        <Connector port="${ajp_port}" protocol="AJP/1.3" redirectPort="${redirect_port}" URIEncoding="UTF-8"/>
+        <#if ajp><!-- Define an AJP 1.3 Connector on port 8009 -->
+        <Connector port="${ajp_port}" protocol="AJP/1.3" redirectPort="${redirect_port}" URIEncoding="UTF-8"/></#if>
 
 
         <!-- An Engine represents the entry point (within Catalina) that processes

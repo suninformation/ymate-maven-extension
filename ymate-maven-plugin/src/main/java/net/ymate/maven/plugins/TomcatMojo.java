@@ -97,6 +97,9 @@ public class TomcatMojo extends AbstractTmplMojo {
     @Parameter(property = "redirectPort", defaultValue = "8443")
     private int redirectPort;
 
+    @Parameter(property = "ajp")
+    private boolean ajp;
+
     @Parameter(property = "ajpHost", defaultValue = "localhost")
     private String ajpHost;
 
@@ -184,6 +187,7 @@ public class TomcatMojo extends AbstractTmplMojo {
             _prop.put("server_port", Integer.toString(serverPort));
             _prop.put("connector_port", Integer.toString(connectorPort));
             _prop.put("redirect_port", Integer.toString(redirectPort));
+            _prop.put("ajp", ajp);
             _prop.put("ajp_host", ajpHost);
             _prop.put("ajp_port", Integer.toString(ajpPort));
             //
@@ -196,8 +200,11 @@ public class TomcatMojo extends AbstractTmplMojo {
             getLog().info("\t|--ServerPort:" + serverPort);
             getLog().info("\t|--ConnectorPort:" + connectorPort);
             getLog().info("\t|--RedirectPort:" + redirectPort);
-            getLog().info("\t|--AjpHost:" + ajpHost);
-            getLog().info("\t|--AjpPort:" + ajpPort);
+            getLog().info("\t|--Ajp:" + ajp);
+            if (ajp) {
+                getLog().info("\t|--AjpHost:" + ajpHost);
+                getLog().info("\t|--AjpPort:" + ajpPort);
+            }
             //
             __doCopyConfFiles(_parent);
             //

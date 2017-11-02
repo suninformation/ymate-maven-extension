@@ -36,9 +36,9 @@ import java.util.*;
 @RequestMapping(value = "${api.mapping}")<#if security?? && security.enabled>
 @Security<#if security.roles?? || security.permissions??>
 @Permission(<#if security.name?? && (security.name?length > 0)>name = "${security.name}"</#if><#if security.roles?? && (security.roles?size > 0)>, roles = {<#list security.roles as p>${p}<#if p_has_next>,</#if></#list>}</#if><#if security.permissions?? && (security.permissions?size > 0)>, value = {<#list security.permissions as p>"${p}"<#if p_has_next>,</#if></#list>}</#if>)</#if></#if><#if intercept?? && (intercept?size > 0)><#if intercept.before?? && (intercept.before?size > 0)>
-@Before({<#list intercept.before as p>${p}<#if p_has_next>,</#if></#list>})</#if><#if intercept.after?? && (intercept.after?size > 0)>
-@After({<#list intercept.after as p>${p}<#if p_has_next>,</#if></#list>})</#if><#if intercept.around?? && (intercept.around?size > 0)>
-@Around({<#list intercept.around as p>${p}<#if p_has_next>,</#if></#list>})</#if><#if intercept.params?? && (intercept.params?size > 0)>
+@Before({<#list intercept.before as p>${p}.class<#if p_has_next>,</#if></#list>})</#if><#if intercept.after?? && (intercept.after?size > 0)>
+@After({<#list intercept.after as p>${p}.class<#if p_has_next>,</#if></#list>})</#if><#if intercept.around?? && (intercept.around?size > 0)>
+@Around({<#list intercept.around as p>${p}.class<#if p_has_next>,</#if></#list>})</#if><#if intercept.params?? && (intercept.params?size > 0)>
 @ContextParam({<#list intercept.params?keys as p>@ParamItem(key = "${p}", value = "${intercept.params[p]}")<#if p_has_next>,</#if></#list>})</#if></#if>
 public class ${api.name?cap_first}Controller {
 
