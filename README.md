@@ -162,7 +162,7 @@
     [INFO] 	|--mapping:/user/info
     [INFO] 	  |--method:POST
     [INFO] 	  |--method:GET
-    [WARNING] Skip existing file /Users/.../ympDemo/src/main/java/net/ymate/demo/controller/DemoAction.java
+    [INFO] Output file: /Users/.../ympDemo/src/main/java/net/ymate/demo/controller/DemoAction.java
     [INFO] ------------------------------------------------------------------------
     [INFO] BUILD SUCCESS
     [INFO] ------------------------------------------------------------------------
