@@ -64,8 +64,8 @@ public class ${api.name?cap_first}Controller {
                          @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
                          @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
                          @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
-                         @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
-                         @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
+                         @VNumeric</#if><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                         @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if><#if p.label?? && (p.label?length > 0)>
                          @VField(label = "${p.label}<#if p.filter.region>范围最小值</#if>")</#if></#if> @RequestParam ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>,
 
                          <#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
@@ -73,8 +73,8 @@ public class ${api.name?cap_first}Controller {
                          @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
                          @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
                          @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
-                         @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
-                         @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if></#if>
+                         @VNumeric</#if><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                         @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if>
                          @VCompare(with = "begin${p.name?cap_first}"<#if p.label?? && (p.label?length > 0)>, withLabel = "${p.label}范围最小值"</#if>)<#if p.label?? && (p.label?length > 0)>
                          @VField(label = "${p.label}<#if p.filter.region>范围最大值</#if>")</#if></#if> @RequestParam ${p.type?cap_first}  end${p.name?cap_first}</#if><#if p_has_next>,
 
@@ -121,10 +121,10 @@ public class ${api.name?cap_first}Controller {
                           @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
                           @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
                           @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
-                          @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                          @VNumeric</#if><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
                           @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>
                           @VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>
-                          @VLength(max = ${p.validation.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
+                          @VLength(max = ${p.validation.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
                           @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list>) throws Exception {
 
         __repository.create(<#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list>);
@@ -141,10 +141,10 @@ public class ${api.name?cap_first}Controller {
     @RequestMapping("/detail")<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_DETAIL")</#if>
     public IView __detail(@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
-                          @VNumeric<#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>(max = ${api.primary.validation.max})</#if> <#else><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
+                          @VNumeric</#if><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
                           @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
                           @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
-                          @VLength(max = ${api.primary.validation.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
+                          @VLength(max = ${api.primary.validation.max})</#if><#if api.primary.label?? && (api.primary.label?length > 0)>
                           @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name}) throws Exception {
 
         return WebResult.SUCCESS().data(__repository.find(${api.primary.name})).toJSON();
@@ -165,10 +165,10 @@ public class ${api.name?cap_first}Controller {
     @Permission("${security.prefix}${api.name?upper_case}_UPDATE")</#if><#if upload>
     @FileUpload</#if>
     public IView __update(@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
-                          @VNumeric<#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>(max = ${api.primary.validation.max})</#if> <#else><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
+                          @VNumeric</#if><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
                           @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
                           @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
-                          @VLength(max = ${api.primary.validation.max})</#if></#if><#if api.primary.label?? && (api.primary.label?length > 0)>
+                          @VLength(max = ${api.primary.validation.max})</#if><#if api.primary.label?? && (api.primary.label?length > 0)>
                           @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name},
 
                           <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
@@ -180,10 +180,10 @@ public class ${api.name?cap_first}Controller {
                           @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
                           @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
                           @VDateTime</#if><#if p.validation.numeric?? && p.validation.numeric>
-                          @VNumeric<#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>(max = ${p.validation.max})</#if> <#else><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
+                          @VNumeric</#if><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
                           @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>
                           @VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>
-                          @VLength(max = ${p.validation.max})</#if></#if></#if><#if p.label?? && (p.label?length > 0)>
+                          @VLength(max = ${p.validation.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
                           @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list><#if api.timestamp>,
 
                           @RequestParam long lastModifyTime</#if>) throws Exception {
