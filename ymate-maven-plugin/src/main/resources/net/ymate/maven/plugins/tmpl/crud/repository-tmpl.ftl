@@ -131,13 +131,12 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
             }
         }
         </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
-        _target = _state.bind().bind()
+        _state.bind().bind()
                 <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
                 .${p.name}(${p.name})
                 </#if></#list><#if api.timestamp>
-                .lastModifyTime(System.currentTimeMillis())</#if>
-                .build();
-        return _target.update(Fields.create(_state.getChangedPropertyNames()));
+                .lastModifyTime(System.currentTimeMillis())</#if>;
+        return _state.unbind().update(Fields.create(_state.getChangedPropertyNames()));
     }</#if>
 
     @Override
