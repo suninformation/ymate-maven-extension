@@ -160,6 +160,7 @@ public class CrudMojo extends AbstractTmplMojo {
                     _info.setQuery("");
                     _info.setLocked(false);
                     _info.setTimestamp(_tableInfo.getFieldMap().containsKey("create_time"));
+                    _info.setUpdateDisabled(!_tableInfo.getFieldMap().containsKey("last_modify_time"));
                     _info.setDescription("");
                     //
                     if (_tableInfo.getFieldMap() != null && !_tableInfo.getFieldMap().isEmpty() && _tableInfo.getPkSet() != null && !_tableInfo.getPkSet().isEmpty()) {
@@ -623,6 +624,8 @@ public class CrudMojo extends AbstractTmplMojo {
 
         private boolean timestamp;
 
+        private boolean updateDisabled;
+
         @JSONField(serialize = false)
         private boolean upload;
 
@@ -748,6 +751,14 @@ public class CrudMojo extends AbstractTmplMojo {
 
         public void setTimestamp(boolean timestamp) {
             this.timestamp = timestamp;
+        }
+
+        public boolean isUpdateDisabled() {
+            return updateDisabled;
+        }
+
+        public void setUpdateDisabled(boolean updateDisabled) {
+            this.updateDisabled = updateDisabled;
         }
 
         public boolean isUpload() {

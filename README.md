@@ -1081,7 +1081,8 @@
                 "query": "",                    // SQL查询语句，当type="query"时必填
                 "description": "",              // 文档描述
                 "locked": false,                // 是否锁定，锁定状态下忽略当前配置的代码生成
-                "timestamp": false,             // 是否使用create_time和last_modify_time字段
+                "timestamp": false,             // 是否包含create_time字段
+                "updateDisabled": false,        // 是否生成更新操作代码(需包含last_modify_time字段)
                 "status": [                     // ————自定义数据状态处理相关配置
                     {
                         "enabled": false,       // 是否生成此状态配置代码

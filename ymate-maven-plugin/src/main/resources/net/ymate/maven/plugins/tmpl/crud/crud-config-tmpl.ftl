@@ -34,6 +34,7 @@
             "description": "",
             "locked": false,
             "timestamp": false,
+            "updateDisabled": false,
             "status": [
                 {
                     "enabled": false,

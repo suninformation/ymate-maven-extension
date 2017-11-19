@@ -62,7 +62,7 @@ public interface I${api.name?cap_first}Repository {
      */
     int[] remove(${api.primary.type?cap_first}[] ${api.primary.name}s) throws Exception;
 
-    <#if api.status?? && (api.status?size > 0)>/**
+    <#if api.status?? && (api.status?size > 0) && !api.updateDisabled>/**
      * 批量更新指定主键记录的fieldName字段value值
      *
      * @param ${api.primary.name}s <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
@@ -73,7 +73,7 @@ public interface I${api.name?cap_first}Repository {
      */
     int[] update(${api.primary.type?cap_first}[] ${api.primary.name}s, String fieldName, Object value) throws Exception;</#if>
 
-    <#if (api.params?? && api.params?size > 0)>/**
+    <#if (api.params?? && api.params?size > 0)><#if !api.updateDisabled>/**
      * 更新指定主键的数据记录
      *
      * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
@@ -84,7 +84,7 @@ public interface I${api.name?cap_first}Repository {
      * @return 返回更新后的数据对象
      * @throws Exception 可能产生的任何异常
      */
-    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list><#if api.timestamp>, long lastModifyTime</#if>) throws Exception;</#if>
+    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list><#if api.timestamp>, long lastModifyTime</#if>) throws Exception;</#if></#if>
 
     /**
      * 查询指定主键的数据记录

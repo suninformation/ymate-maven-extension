@@ -150,7 +150,7 @@ public class ${api.name?cap_first}Controller {
         return WebResult.SUCCESS().data(__repository.find(${api.primary.name})).toJSON();
     }
 
-    /**
+    <#if !api.updateDisabled>/**
      * 更新指定主键的记录
      *
      * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
@@ -190,7 +190,7 @@ public class ${api.name?cap_first}Controller {
 
         __repository.update(${api.primary.name}, <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list><#if api.timestamp>, lastModifyTime</#if>);
         return WebResult.SUCCESS().toJSON();
-    }</#if>
+    }</#if></#if>
 
     /**
      * 删除指定主键的记录
@@ -208,7 +208,7 @@ public class ${api.name?cap_first}Controller {
         return WebResult.SUCCESS().toJSON();
     }
 
-    <#if api.status?? && (api.status?size > 0)><#list api.status as p><#if p.enabled>
+    <#if api.status?? && (api.status?size > 0 && !api.updateDisabled)><#list api.status as p><#if p.enabled>
 
     /**
      * <#if p.description?? && (p.description?length > 0)>${p.description}<#else>设置指定主键记录的 ${p.column?upper_case} 字段值为 <#if (p.type?lower_case == 'string')>"${p.value}"<#else>${p.value}</#if></#if>
