@@ -30,6 +30,7 @@ import net.ymate.platform.persistence.jdbc.scaffold.Attr;
 import net.ymate.platform.persistence.jdbc.scaffold.ColumnInfo;
 import net.ymate.platform.persistence.jdbc.scaffold.ConfigInfo;
 import net.ymate.platform.persistence.jdbc.scaffold.TableInfo;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -54,6 +55,9 @@ public class CrudMojo extends AbstractTmplMojo {
     @Parameter(property = "action")
     private String action;
 
+    @Parameter(property = "filter")
+    private String[] filter;
+
     @Parameter(property = "fromDb")
     private boolean fromDb;
 
@@ -73,6 +77,14 @@ public class CrudMojo extends AbstractTmplMojo {
                     Map<String, Object> _sqlMap = new HashMap<String, Object>();
                     //
                     for (ApiInfo _api : _application.getApis()) {
+                        if (!ArrayUtils.isEmpty(filter)) {
+                            for (String _item : filter) {
+                                if (StringUtils.equalsIgnoreCase(_item, _api.getName())) {
+                                    break;
+                                }
+                            }
+                        }
+                        //
                         _api.checkDefaultValue();
                         //
                         boolean _isQuery = StringUtils.equalsIgnoreCase(_api.getModel(), "query");
@@ -148,6 +160,14 @@ public class CrudMojo extends AbstractTmplMojo {
             //
             List<String> _tables = TableInfo.getTableNames(_database);
             for (String _tableName : _tables) {
+                if (!ArrayUtils.isEmpty(filter)) {
+                    for (String _item : filter) {
+                        if (StringUtils.equalsIgnoreCase(_item, _tableName)) {
+                            break;
+                        }
+                    }
+                }
+                //
                 TableInfo _tableInfo = TableInfo.create(_database.getDefaultConnectionHolder(), _config, _tableName, false);
                 if (_tableInfo != null) {
                     ApiInfo _info = new ApiInfo();

@@ -1004,6 +1004,7 @@
     |---|---|---|
     |file|否|CRUD规则配置文件，默认值：`misc/crud.json`|
     |action|否|指定本次生成哪些代码，默认值：`全部`，取值范围：`controller`，`repository`|
+    |filter|否|指定本次仅生成列表中API或表的代码，默认值：`空`，多个名称之间用`,`分隔|
     |fromDb|否|是否通过数据库表结构生成规则配置文件，默认值：`false`|
     |mapping|否|指定生成的控制器基准`RequestMapping`路径，默认值：`空`|
 
@@ -1046,15 +1047,13 @@
 
     
     ```
-    {
-        "application": {                        // ————基本信息
-            "name": "ympDemo",                  // 名称
-            "version": "1.0-SNAPSHOT",          // 当前配置版本
-            "package": "net.ymate.demo",        // 代码基准包名
-            "author": "ymatescaffold",          // 作者信息
-            "createTime": "2017/11/02 12:12",   // 配置文件创建时间
-            "locked": false                     // 是否锁定，锁定状态下不会生成任何文件
-        },
+    {                                       // ————基本信息
+        "name": "ympDemo",                  // 名称
+        "version": "1.0-SNAPSHOT",          // 当前配置版本
+        "package": "net.ymate.demo",        // 代码基准包名
+        "author": "ymatescaffold",          // 作者信息
+        "createTime": "2017/11/02 12:12",   // 配置文件创建时间
+        "locked": false,                    // 是否锁定，锁定状态下不会生成任何文件
         "security": {               // ————权限安全相关配置
             "enabled": false,       // 是否开启权限配置
             "name": "",             // 权限组名称
