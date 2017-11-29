@@ -156,7 +156,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                 <#if api.params?? && (api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>
                     <#if p.type?lower_case == 'string'><#if !p.filter.region>//
                     if (StringUtils.isNotBlank(${p.name})) {
-                    <#if p.like?? && p.like>
+                    <#if p.filter.like?? && p.filter.like>
                         _cond.and().like(${api.model}.FIELDS.${p.column?upper_case}).param("%" + ${p.name} + "%");
                     <#else>
                         _cond.and().eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
