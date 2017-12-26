@@ -48,10 +48,14 @@ public class ${api.name?cap_first}Controller {
     /**
      * 条件查询
      *
-     <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>
+<#if api.primary.filter?? && api.primary.filter.enabled>
+     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
+</#if>
+<#if formbean>* @param ${api.name}Form DTO对象<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#compress>
      * @param <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if> <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}<#if p.filter.region>范围最小值</#if></#if><#if p.filter.region>
-     * @param end${p.name?cap_first} <#if p.label?? && (p.label?length > 0)>${p.label}范围最大值</#if></#if></#if>
-     </#list></#if>
+     * @param end${p.name?cap_first} <#if p.label?? && (p.label?length > 0)>${p.label}范围最大值</#if></#if></#compress></#if>
+</#list></#if></#if>
+
      * @param page 查询页号
      * @param pageSize 分页大小
      * @return 返回执行结果视图
@@ -59,7 +63,16 @@ public class ${api.name?cap_first}Controller {
      */
     @RequestMapping("/query")<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_QUERY")</#if>
-    public IView __query(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
+    public IView __query(<#if api.primary.filter?? && api.primary.filter.enabled>@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
+                         @VNumeric</#if><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
+                         @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
+                         @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
+                         @VLength(max = ${api.primary.validation.max})</#if><#if api.primary.label?? && (api.primary.label?length > 0)>
+                         @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name}, </#if>
+
+                        <#if formbean>@ModelBind ${app.packageName}.dto.${api.name?cap_first}FormBean ${api.name}Form, <#else>
+
+                         <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
                          @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
                          @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
                          @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
@@ -78,11 +91,11 @@ public class ${api.name?cap_first}Controller {
                          @VCompare(with = "begin${p.name?cap_first}"<#if p.label?? && (p.label?length > 0)>, withLabel = "${p.label}范围最小值"</#if>)<#if p.label?? && (p.label?length > 0)>
                          @VField(label = "${p.label}<#if p.filter.region>范围最大值</#if>")</#if></#if> @RequestParam ${p.type?cap_first}  end${p.name?cap_first}</#if><#if p_has_next>,
 
-                         </#if></#if></#list>, </#if>
+                         </#if></#if></#list></#if>, </#if>
 
                          @RequestParam int page, @RequestParam int pageSize) throws Exception {
 
-    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>null, null, page, pageSize);
+    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean>${api.name}Form, null, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>null, null</#if>, page, pageSize);
     //
     return WebResult.SUCCESS().data(_result).toJSON();
     }
@@ -104,16 +117,17 @@ public class ${api.name?cap_first}Controller {
     <#if (api.params?? && api.params?size > 0)>/**
      * 创建新记录
      *
-     <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
+     <#if formbean>* @param ${api.name}Form DTO对象<#else><#compress><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
      * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}</#if></#if>
-     </#list></#if>
+     </#list></#if></#compress></#if>
+
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping(value = "/create", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_CREATE")</#if><#if upload>
     @FileUpload</#if>
-    public IView __create(<#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
+    public IView __create(<#if formbean>@ModelBind ${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
 
                           </#if><#if p.required?? && p.required>@VRequried</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
                           @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
@@ -125,9 +139,9 @@ public class ${api.name?cap_first}Controller {
                           @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>
                           @VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>
                           @VLength(max = ${p.validation.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
-                          @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list>) throws Exception {
+                          @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if>) throws Exception {
 
-        __repository.create(<#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list>);
+        __repository.create(<#if formbean>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if>);
         return WebResult.SUCCESS().toJSON();
     }
 
@@ -154,9 +168,10 @@ public class ${api.name?cap_first}Controller {
      * 更新指定主键的记录
      *
      * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
-     <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
+     <#if formbean>* @param ${api.name}Form DTO对象<#else><#compress><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
      * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}</#if></#if>
-     </#list></#if><#if api.timestamp>
+     </#list></#if></#compress></#if><#if api.timestamp>
+
      * @param lastModifyTime 记录最后修改时间(用于版本比较)</#if>
      * @return 返回执行结果视图
      * @throws Exception 可能产生的任何异常
@@ -171,6 +186,8 @@ public class ${api.name?cap_first}Controller {
                           @VLength(max = ${api.primary.validation.max})</#if><#if api.primary.label?? && (api.primary.label?length > 0)>
                           @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name},
 
+                          <#if formbean>@ModelBind ${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else>
+
                           <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
 
                           </#if><#if p.required?? && p.required>
@@ -184,11 +201,11 @@ public class ${api.name?cap_first}Controller {
                           @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>
                           @VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>
                           @VLength(max = ${p.validation.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
-                          @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list><#if api.timestamp>,
+                          @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if><#if api.timestamp>,
 
                           @RequestParam long lastModifyTime</#if>) throws Exception {
 
-        __repository.update(${api.primary.name}, <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list><#if api.timestamp>, lastModifyTime</#if>);
+        __repository.update(${api.primary.name}, <#if formbean>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if><#if api.timestamp>, lastModifyTime</#if>);
         return WebResult.SUCCESS().toJSON();
     }</#if></#if>
 

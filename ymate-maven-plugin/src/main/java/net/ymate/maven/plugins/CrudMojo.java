@@ -61,6 +61,9 @@ public class CrudMojo extends AbstractTmplMojo {
     @Parameter(property = "fromDb")
     private boolean fromDb;
 
+    @Parameter(property = "formBean")
+    private boolean formBean;
+
     @Parameter(property = "mapping", defaultValue = "v1")
     private String mapping;
 
@@ -96,6 +99,9 @@ public class CrudMojo extends AbstractTmplMojo {
                         _props.put("intercept", _application.getIntercept());
                         _props.put("query", _isQuery);
                         _props.put("upload", _api.isUpload());
+                        //
+                        _props.put("formbean", formBean && !_api.getParams().isEmpty());
+                        //
                         if (_isQuery) {
                             _sqlMap.put(_api.getName(), _api.getQuery());
                         }
@@ -103,6 +109,11 @@ public class CrudMojo extends AbstractTmplMojo {
                             getLog().info("API " + _api.getName() + " has been locked.");
                         } else {
                             String _apiName = StringUtils.capitalize(_api.getName());
+                            //
+                            if (formBean && !_api.getParams().isEmpty()) {
+                                __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "FormBean.java"), "crud/formbean-tmpl", _props);
+                                __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "UpdateFormBean.java"), "crud/formbean-update-tmpl", _props);
+                            }
                             //
                             if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
                                 __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);

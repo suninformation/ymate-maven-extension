@@ -36,13 +36,14 @@ public interface I${api.name?cap_first}Repository {
     /**
      * 创建新数据记录
      *
-     <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
+     <#if formbean>* @param ${api.name}Form DTO对象<#else><#compress><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
      * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}</#if></#if>
-     </#list></#if>
+     </#list></#if></#compress></#if>
+
      * @return 返回创建后的数据对象
      * @throws Exception 可能产生的任何异常
      */
-    ${api.model} create(<#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list>) throws Exception;</#if>
+    ${api.model} create(<#if formbean>${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if>) throws Exception;</#if>
 
     /**
     * 删除指定主键的记录
@@ -77,14 +78,15 @@ public interface I${api.name?cap_first}Repository {
      * 更新指定主键的数据记录
      *
      * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
-     <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
+     <#if formbean>* @param ${api.name}Form DTO对象<#else><#compress><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
      * @param ${p.name} <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}</#if></#if>
-     </#list></#if><#if api.timestamp>
+     </#list></#if></#compress></#if><#if api.timestamp>
+
      * @param lastModifyTime 记录最后修改时间(用于版本比较)</#if>
      * @return 返回更新后的数据对象
      * @throws Exception 可能产生的任何异常
      */
-    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list><#if api.timestamp>, long lastModifyTime</#if>) throws Exception;</#if></#if>
+    ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#if formbean>${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if><#if api.timestamp>, long lastModifyTime</#if>) throws Exception;</#if></#if>
 
     /**
      * 查询指定主键的数据记录
@@ -98,10 +100,14 @@ public interface I${api.name?cap_first}Repository {
     /**
      * 条件查询
      *
-     <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>
+     <#if api.primary.filter?? && api.primary.filter.enabled>
+     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
+     </#if>
+     <#if formbean>* @param ${api.name}Form DTO对象<#else><#compress><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>
      * @param <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if> <#if p.label?? && (p.label?length > 0)>${p.label}<#else>${p.description}</#if><#if p.filter.region>
      * @param end${p.name?cap_first} <#if p.label?? && (p.label?length > 0)>${p.label}</#if></#if></#if>
-     </#list></#if>
+     </#list></#if></#compress></#if>
+
      * @param fields 过滤字段集合
      * @param orderBy 排序对象
      * @param page 查询页号
@@ -109,6 +115,6 @@ public interface I${api.name?cap_first}Repository {
      * @return 返回查询结果集对象
      * @throws Exception 可能产生的任何异常
      */
-    IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>Fields fields, OrderBy orderBy, int page, int pageSize) throws Exception;
+    IResultSet<${api.model}> find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.type?cap_first} ${api.primary.name}, </#if><#if formbean>${app.packageName}.dto.${api.name?cap_first}FormBean ${api.name}Form, <#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if></#if>Fields fields, OrderBy orderBy, int page, int pageSize) throws Exception;
     </#if>
 }

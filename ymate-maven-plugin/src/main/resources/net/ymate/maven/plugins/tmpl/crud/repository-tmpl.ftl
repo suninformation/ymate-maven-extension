@@ -57,12 +57,12 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if (api.params?? && api.params?size > 0)>@Override
     @Transaction
-    public ${api.model} create(<#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list>) throws Exception {
+    public ${api.model} create(<#if formbean>${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if>) throws Exception {
         <#if api.timestamp>long _now = System.currentTimeMillis();
         //</#if>
         ${api.model} _target = ${api.model}.builder().id(__buildPrimaryKey())
                 <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
-                .${p.name}(${p.name})
+                .${p.name}(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>)
                 </#if></#list><#if api.timestamp>
                 .createTime(_now)<#if !api.updateDisabled>
                 .lastModifyTime(_now)</#if></#if>
@@ -122,7 +122,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#if (api.params?? && api.params?size > 0)><#if !api.updateDisabled>@Override
     @Transaction
-    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list><#if api.timestamp>, long lastModifyTime</#if>) throws Exception {
+    public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#if formbean>${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if><#if api.timestamp>, long lastModifyTime</#if>) throws Exception {
         ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.MYSQL);
         <#if api.timestamp>if (lastModifyTime > 0) {
             long _current = BlurObject.bind(_target.getLastModifyTime()).toLongValue();
@@ -133,7 +133,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
         _state.bind().bind()
                 <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
-                .${p.name}(${p.name})
+                .${p.name}(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>)
                 </#if></#list><#if api.timestamp>
                 .lastModifyTime(System.currentTimeMillis())</#if>;
         return _state.unbind().update(Fields.create(_state.getChangedPropertyNames()));
@@ -148,27 +148,38 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }
 
     @Override
-    public IResultSet<${api.model}> find(<#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>final ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, final ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>final Fields fields, final OrderBy orderBy, final int page, final int pageSize) throws Exception {
+    public IResultSet<${api.model}> find(<#if api.primary.filter?? && api.primary.filter.enabled>final ${api.primary.type?cap_first} ${api.primary.name}, </#if><#if formbean>final ${app.packageName}.dto.${api.name?cap_first}FormBean ${api.name}Form, <#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>final ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, final ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if></#if>final Fields fields, final OrderBy orderBy, final int page, final int pageSize) throws Exception {
         return JDBC.get().openSession(new ISessionExecutor<IResultSet<${api.model}>>() {
             @Override
             public IResultSet<${api.model}> execute(ISession session) throws Exception {
                 Cond _cond = Cond.create().eqOne();
+                <#if api.primary.filter?? && api.primary.filter.enabled>
+                    <#if api.primary.type?lower_case == 'string'>
+                    if (StringUtils.isNotBlank(${api.primary.name})) {
+                        _cond.and().eq(${api.model}.FIELDS.${api.primary.column?upper_case}).param(${api.primary.name});
+                    }
+                    <#else>
+                    if (${api.primary.name} != null) {
+                        _cond.and().eq(${api.model}.FIELDS.${api.primary.column?upper_case}).param(${api.primary.name});
+                    }
+                    </#if>
+                </#if>
                 <#if api.params?? && (api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>
                     <#if p.type?lower_case == 'string'><#if !p.filter.region>//
-                    if (StringUtils.isNotBlank(${p.name})) {
+                    if (StringUtils.isNotBlank(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>)) {
                     <#if p.filter.like?? && p.filter.like>
-                        _cond.and().like(${api.model}.FIELDS.${p.column?upper_case}).param("%" + ${p.name} + "%");
+                        _cond.and().like(${api.model}.FIELDS.${p.column?upper_case}).param("%" + <#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if> + "%");
                     <#else>
-                        _cond.and().eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
+                        _cond.and().eq(${api.model}.FIELDS.${p.column?upper_case}).param(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>);
                     </#if>
                     }
                     </#if><#else><#if p.filter.region && (p.type?lower_case == "integer" || p.type?lower_case == "long")>//
-                    if (begin${p.name?cap_first} != null && end${p.name?cap_first} != null) {
-                        _cond.and().between(${api.model}.FIELDS.${p.column?upper_case}, begin${p.name?cap_first}, end${p.name?cap_first});
+                    if (<#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if> != null && <#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if> != null) {
+                        _cond.and().between(${api.model}.FIELDS.${p.column?upper_case}, <#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if>, <#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if>);
                     }
                     <#else>//
-                    if (${p.name} != null) {
-                        _cond.and().eq(${api.model}.FIELDS.${p.column?upper_case}).param(${p.name});
+                    if (<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if> != null) {
+                        _cond.and().eq(${api.model}.FIELDS.${p.column?upper_case}).param(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>);
                     }
                     </#if></#if>
                 </#if></#list></#if>//
