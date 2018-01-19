@@ -235,6 +235,7 @@ public class CrudMojo extends AbstractTmplMojo {
 
         private String name;
 
+        @JSONField(name = "package")
         private String packageName;
 
         private String version;
