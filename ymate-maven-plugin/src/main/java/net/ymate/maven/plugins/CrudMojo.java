@@ -80,47 +80,51 @@ public class CrudMojo extends AbstractTmplMojo {
                     Map<String, Object> _sqlMap = new HashMap<String, Object>();
                     //
                     for (ApiInfo _api : _application.getApis()) {
+                        boolean _matched = false;
                         if (!ArrayUtils.isEmpty(filter)) {
                             for (String _item : filter) {
                                 if (StringUtils.equalsIgnoreCase(_item, _api.getName())) {
+                                    getLog().info("API Name: " + _api.getName() + " has been filtered.");
+                                    _matched = true;
                                     break;
                                 }
                             }
                         }
-                        //
-                        _api.checkDefaultValue();
-                        //
-                        boolean _isQuery = StringUtils.equalsIgnoreCase(_api.getModel(), "query");
-                        //
-                        Map<String, Object> _props = new HashMap<String, Object>();
-                        _props.put("app", _application.toMap());
-                        _props.put("api", _api.toMap());
-                        _props.put("security", _application.getSecurity().toMap());
-                        _props.put("intercept", _application.getIntercept());
-                        _props.put("query", _isQuery);
-                        _props.put("upload", _api.isUpload());
-                        //
-                        _props.put("formbean", formBean && !_api.getParams().isEmpty());
-                        //
-                        if (_isQuery) {
-                            _sqlMap.put(_api.getName(), _api.getQuery());
-                        }
-                        if (_api.isLocked()) {
-                            getLog().info("API " + _api.getName() + " has been locked.");
-                        } else {
-                            String _apiName = StringUtils.capitalize(_api.getName());
+                        if (!_matched) {
+                            _api.checkDefaultValue();
                             //
-                            if (formBean && !_api.getParams().isEmpty()) {
-                                __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "FormBean.java"), "crud/formbean-tmpl", _props);
-                                __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "UpdateFormBean.java"), "crud/formbean-update-tmpl", _props);
-                            }
+                            boolean _isQuery = StringUtils.equalsIgnoreCase(_api.getModel(), "query");
                             //
-                            if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
-                                __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
+                            Map<String, Object> _props = new HashMap<String, Object>();
+                            _props.put("app", _application.toMap());
+                            _props.put("api", _api.toMap());
+                            _props.put("security", _application.getSecurity().toMap());
+                            _props.put("intercept", _application.getIntercept());
+                            _props.put("query", _isQuery);
+                            _props.put("upload", _api.isUpload());
+                            //
+                            _props.put("formbean", formBean && !_api.getParams().isEmpty());
+                            //
+                            if (_isQuery) {
+                                _sqlMap.put(_api.getName(), _api.getQuery());
                             }
-                            if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
-                                __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
-                                __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
+                            if (_api.isLocked()) {
+                                getLog().info("API " + _api.getName() + " has been locked.");
+                            } else {
+                                String _apiName = StringUtils.capitalize(_api.getName());
+                                //
+                                if (formBean && !_api.getParams().isEmpty()) {
+                                    __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "FormBean.java"), "crud/formbean-tmpl", _props);
+                                    __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "UpdateFormBean.java"), "crud/formbean-update-tmpl", _props);
+                                }
+                                //
+                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
+                                    __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
+                                }
+                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
+                                    __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
+                                    __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
+                                }
                             }
                         }
                     }
@@ -171,47 +175,51 @@ public class CrudMojo extends AbstractTmplMojo {
             //
             List<String> _tables = TableInfo.getTableNames(_database);
             for (String _tableName : _tables) {
+                boolean _matched = false;
                 if (!ArrayUtils.isEmpty(filter)) {
                     for (String _item : filter) {
                         if (StringUtils.equalsIgnoreCase(_item, _tableName)) {
+                            getLog().info("Table Name: " + _tableName + " has been filtered.");
+                            _matched = true;
                             break;
                         }
                     }
                 }
-                //
-                TableInfo _tableInfo = TableInfo.create(_database.getDefaultConnectionHolder(), _config, _tableName, false);
-                if (_tableInfo != null) {
-                    ApiInfo _info = new ApiInfo();
-                    //
-                    PairObject<String, String> _name = _config.buildNamePrefix(_tableName);
-                    //
-                    _info.setName(StringUtils.uncapitalize(_name.getKey()));
-                    _info.setMapping("/" + mapping + "/" + EntityMeta.fieldNameToPropertyName(_info.getName(), 0).replace('_', '/'));
-                    _info.setModel(packageBase + ".model." + _name.getKey() + (_config.isUseClassSuffix() ? "Model" : ""));
-                    _info.setQuery("");
-                    _info.setLocked(false);
-                    _info.setTimestamp(_tableInfo.getFieldMap().containsKey("create_time"));
-                    _info.setUpdateDisabled(!_tableInfo.getFieldMap().containsKey("last_modify_time"));
-                    _info.setDescription("");
-                    //
-                    if (_tableInfo.getFieldMap() != null && !_tableInfo.getFieldMap().isEmpty() && _tableInfo.getPkSet() != null && !_tableInfo.getPkSet().isEmpty()) {
-                        ColumnInfo _primaryColumn = _tableInfo.getFieldMap().get(_tableInfo.getPkSet().get(0));
-                        if (_primaryColumn != null) {
-                            _info.setPrimary(new ApiParameter(_primaryColumn));
-                            //
-                            List<ApiParameter> _params = new ArrayList<ApiParameter>();
-                            for (ColumnInfo _column : _tableInfo.getFieldMap().values()) {
-                                if (!_column.isPrimaryKey()) {
-                                    _params.add(new ApiParameter(_column));
+                if (!_matched) {
+                    TableInfo _tableInfo = TableInfo.create(_database.getDefaultConnectionHolder(), _config, _tableName, false);
+                    if (_tableInfo != null) {
+                        ApiInfo _info = new ApiInfo();
+                        //
+                        PairObject<String, String> _name = _config.buildNamePrefix(_tableName);
+                        //
+                        _info.setName(StringUtils.uncapitalize(_name.getKey()));
+                        _info.setMapping("/" + mapping + "/" + EntityMeta.fieldNameToPropertyName(_info.getName(), 0).replace('_', '/'));
+                        _info.setModel(packageBase + ".model." + _name.getKey() + (_config.isUseClassSuffix() ? "Model" : ""));
+                        _info.setQuery("");
+                        _info.setLocked(false);
+                        _info.setTimestamp(_tableInfo.getFieldMap().containsKey("create_time"));
+                        _info.setUpdateDisabled(!_tableInfo.getFieldMap().containsKey("last_modify_time"));
+                        _info.setDescription("");
+                        //
+                        if (_tableInfo.getFieldMap() != null && !_tableInfo.getFieldMap().isEmpty() && _tableInfo.getPkSet() != null && !_tableInfo.getPkSet().isEmpty()) {
+                            ColumnInfo _primaryColumn = _tableInfo.getFieldMap().get(_tableInfo.getPkSet().get(0));
+                            if (_primaryColumn != null) {
+                                _info.setPrimary(new ApiParameter(_primaryColumn));
+                                //
+                                List<ApiParameter> _params = new ArrayList<ApiParameter>();
+                                for (ColumnInfo _column : _tableInfo.getFieldMap().values()) {
+                                    if (!_column.isPrimaryKey()) {
+                                        _params.add(new ApiParameter(_column));
+                                    }
                                 }
+                                _info.setParams(_params);
+                                _info.setStatus(Collections.<StatusInfo>emptyList());
+                                //
+                                if (_apisSB.length() > 0) {
+                                    _apisSB.append(",\r\n\t\t");
+                                }
+                                _apisSB.append(JSON.toJSONString(_info, SerializerFeature.SortField, SerializerFeature.MapSortField, SerializerFeature.PrettyFormat));
                             }
-                            _info.setParams(_params);
-                            _info.setStatus(Collections.<StatusInfo>emptyList());
-                            //
-                            if (_apisSB.length() > 0) {
-                                _apisSB.append(",\r\n\t\t");
-                            }
-                            _apisSB.append(JSON.toJSONString(_info, SerializerFeature.SortField, SerializerFeature.MapSortField, SerializerFeature.PrettyFormat));
                         }
                     }
                 }
