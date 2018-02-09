@@ -52,7 +52,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
 
     <#else>
     private <#if (api.primary.type?lower_case == 'string')>String<#else>${api.primary.type?cap_first}</#if> __buildPrimaryKey() {
-        return <#if (api.primary.type?lower_case == 'string')>UUIDUtils.UUID()<#else>null // TODO Build PrimaryKey for ${api.name?cap_first}</#if>;
+        <#if (api.primary.type?lower_case == 'string')>return UUIDUtils.UUID();<#else>throw new UnsupportedOperationException("Need to implement the rule of the primary key ${api.name?cap_first} generation");</#if>
     }
 
     <#if (api.params?? && api.params?size > 0)>@Override
