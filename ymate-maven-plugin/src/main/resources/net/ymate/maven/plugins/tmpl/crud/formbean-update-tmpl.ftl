@@ -20,12 +20,13 @@ import java.io.Serializable;
 */
 public class ${api.name?cap_first}UpdateFormBean implements Serializable {
 
-    <#if (api.params?? && api.params?size > 0)><#list api.params as p>
+    <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime')><#else>
     <#if (p.description??)>
     /**
     * ${p.description}
     */</#if>
-    <#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
+    <#if p.validation??><#if p.required?? && p.required>
+    @VRequried</#if><#if p.validation.regex?? && (p.validation.regex?length > 0)>
     @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
     @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
     @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>
@@ -36,9 +37,9 @@ public class ${api.name?cap_first}UpdateFormBean implements Serializable {
     @RequestParam
     private ${p.type?cap_first} ${p.name};
 
-    </#list></#if>
+    </#if></#list></#if>
 
-    <#if (api.params?? && api.params?size > 0)><#list api.params as p>
+    <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime')><#else>
     public ${p.type?cap_first} get${p.name?cap_first}() {
         return ${p.name};
     }
@@ -47,5 +48,5 @@ public class ${api.name?cap_first}UpdateFormBean implements Serializable {
         this.${p.name} = ${p.name};
     }
 
-    </#list></#if>
+    </#if></#list></#if>
 }
