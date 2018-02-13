@@ -31,6 +31,8 @@
             <includes>
                 <include>**/*.log</include>
                 <include>**/*.tmpl</include>
+                <include>**/*.css</include>
+                <include>**/*.png</include>
             </includes>
         </fileSet>
     </fileSets>
