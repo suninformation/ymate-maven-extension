@@ -546,7 +546,7 @@
     |name|是|配置类名称|
     |home|否|配置体系根路径，WEB工程默认值：`/src/main/webapp/WEB-INF`，普通工程默认值：`/src/main/resources`|
     |properties|否|是否使用properties格式的配置文件，默认值：`false`|
-    |file|否|自定义配置文件相对路径，默认值：`cfgs/<配置类名称>.cfg.<xml|properties>`|
+    |file|否|自定义配置文件相对路径，默认值：`cfgs/<配置类名称>.cfg.<xml\|properties>`|
     |package|否|配置类包名，默认值：`${project.groupId}.service`|
     |suffix|否|配置类名后缀，默认值：`Service`|
     |interface|否|是否启用接口模式，默认值：false|
