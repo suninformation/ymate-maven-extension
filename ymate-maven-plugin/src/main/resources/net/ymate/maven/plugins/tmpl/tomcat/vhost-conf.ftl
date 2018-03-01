@@ -30,6 +30,12 @@ upstream ${service_name} {
 }
 
 server {
+    listen 80 default;
+    server_name _;
+    return 500;
+}
+
+server {
     listen 80;
     server_name ${host_name} ${host_alias};
 
