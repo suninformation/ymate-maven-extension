@@ -1,0 +1,40 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <RollingRandomAccessFile name="default"
+                                 fileName="${symbol_dollar}{sys:LOG_OUT_DIR}/default.log"
+                                 filePattern="${symbol_dollar}{sys:LOG_OUT_DIR}/${symbol_dollar}${symbol_dollar}{date:yyyyMMdd}/default-%d{yyMMddHH}-%i.log">
+            <PatternLayout pattern="%m %n" charset="UTF-8"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100"/>
+        </RollingRandomAccessFile>
+        <!--
+        <RollingRandomAccessFile name="custom-logname"
+                                 fileName="${symbol_dollar}{sys:LOG_OUT_DIR}/custom-logname.log"
+                                 filePattern="${symbol_dollar}{sys:LOG_OUT_DIR}/${symbol_dollar}${symbol_dollar}{date:yyyyMMdd}/custom-logname-%d{yyMMddHH}-%i.log">
+            <PatternLayout pattern="%m %n" charset="UTF-8"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1"/>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100"/>
+        </RollingRandomAccessFile>
+        -->
+    </Appenders>
+    <Loggers>
+        <!--
+        <Logger name="custom-logname" level="debug" additivity="false">
+            <AppenderRef ref="custom-logname"/>
+        </Logger>
+        -->
+        <Root level="debug">
+            <AppenderRef ref="default"/>
+        </Root>
+    </Loggers>
+</Configuration>

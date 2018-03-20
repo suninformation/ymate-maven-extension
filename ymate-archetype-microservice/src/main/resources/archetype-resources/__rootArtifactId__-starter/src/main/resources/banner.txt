@@ -1,0 +1,10 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+
+
+__  ____  _______             __
+${symbol_escape} ${symbol_escape}/ /  |/  / __ ${symbol_escape}____  _____/ /_
+ ${symbol_escape}  / /|_/ / /_/ / __ ${symbol_escape}/ ___/ __/
+ / / /  / / ____/ /_/ / /  / /_
+/_/_/  /_/_/    ${symbol_escape}____/_/   ${symbol_escape}__/

@@ -6,7 +6,7 @@
 
 #### 1、项目模板
 
-目前提供以下4种项目模板：
+目前提供以下5种项目模板：
 
 - `ymate-archetype-quickstart (quickstart)`：标准Java工程，已集成YMP依赖；
 
@@ -15,6 +15,8 @@
 - `ymate-archetype-module (module)`：YMP模块工程，提供Demo示例及JUint测试代码；
 
 - `ymate-archetype-serv (serv)`：YMP服务工程，分别提供TCP、UDP客户端和服务端示例程序及相关配置；
+
+- `ymate-archetype-microservice (microservice)`：YMP微服务多模块Maven工程；
 
 > 查看使用文档：[通过项目模板自动生成Java工程](https://gitee.com/suninformation/ymate-platform-v2/wikis/pages?title=Quickstart_New&parent=)
 

@@ -1,0 +1,9 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+<?xml version="1.0" encoding="UTF-8"?>
+<properties>
+    <category name="default">
+        <property name="echo_str" value="YMP Microservice."/>
+    </category>
+</properties>
