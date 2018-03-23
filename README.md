@@ -714,7 +714,7 @@
 
 ##### 2.1.11 `tomcat`：Tomcat服务配置生成器
 
-> 生成基于Tomcat的获立JVM服务目录结构及配置文件，目前支持Tomcat版本：`6`、`7`、`8`；
+> 生成基于Tomcat的获立JVM服务目录结构及配置文件，目前支持Tomcat版本：`6`、`7`、`8`、`9`；
 
 - 参数列表：
 
@@ -725,7 +725,7 @@
     |catalinaBase|否|生成的服务存放的位置，默认值：`当前路径`|
     |hostName|否|主机名称，默认值：`localhost`|
     |hostAlias|否|别名，默认值：`空`|
-    |tomcatVersion|否|指定Tomcat软件包的版本，默认值：`7`，目前支持：`6`，`7`，`8`，（必须与`catalinaHome`指定的版本匹配）|
+    |tomcatVersion|否|指定Tomcat软件包的版本，默认值：`7`，目前支持：`6`，`7`，`8`，`9`，（必须与`catalinaHome`指定的版本匹配）|
     |servicePort|否|服务端口（Tomcat服务的Server端口），默认值：`8005`|
     |connectorPort|否|容器端口（Tomcat服务的Connector端口），默认值：`8088`|
     |ajp|否|是否启用AJP配置，默认值：`false`|

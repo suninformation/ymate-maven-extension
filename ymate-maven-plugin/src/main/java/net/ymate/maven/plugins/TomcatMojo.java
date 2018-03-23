@@ -135,7 +135,7 @@ public class TomcatMojo extends AbstractTmplMojo {
         for (String _fileName : __NEED_COPY_FILES) {
             FileUtils.copyFile(new File(catalinaHome, _fileName), new File(parent, _fileName));
         }
-        if (tomcatVersion == 8) {
+        if (tomcatVersion == 8 || tomcatVersion == 9) {
             for (String _fileName : __V8_COPY_FILES) {
                 File _targetFile = new File(catalinaHome, _fileName);
                 if (_targetFile.exists() && _targetFile.isFile()) {
@@ -160,8 +160,8 @@ public class TomcatMojo extends AbstractTmplMojo {
             _prop.put("catalina_base", _parent.getPath());
             if (tomcatVersion <= 0) {
                 tomcatVersion = 7;
-            } else if (tomcatVersion < 6 || tomcatVersion > 8) {
-                throw new IllegalArgumentException("'tomcatVersion' invalid, only supports 6, 7, 8");
+            } else if (tomcatVersion < 6 || tomcatVersion > 9) {
+                throw new IllegalArgumentException("'tomcatVersion' invalid, only supports 6, 7, 8, 9");
             }
             hostName = StringUtils.trimToEmpty(hostName);
             hostAlias = StringUtils.trimToEmpty(hostAlias);
