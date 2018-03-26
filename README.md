@@ -639,6 +639,7 @@
     |参数名称|必须|说明|
     |---|---|---|
     |passwd|是|原始字符串|
+    |passkey|否|自定义密钥|
 
 - 命令示例：
 
@@ -661,6 +662,7 @@
     [INFO] ------------------------------------------------------------------------
     [INFO]
     [INFO] --- ymate-maven-plugin:1.0-SNAPSHOT:enpasswd (default-cli) @ ympDemo ---
+    [INFO] Use passkey: 16296b50a6db0d0bd45d2e5f84fcdd76
     [INFO] Encrypt password: D3ytOQrD63BlKGDMJnaYsQ==
     [INFO] ------------------------------------------------------------------------
     [INFO] BUILD SUCCESS
@@ -680,6 +682,7 @@
     |参数名称|必须|说明|
     |---|---|---|
     |passwd|是|已加密字符串|
+    |passkey|否|自定义密钥|
 
 - 命令示例：
 
@@ -702,6 +705,7 @@
     [INFO] ------------------------------------------------------------------------
     [INFO]
     [INFO] --- ymate-maven-plugin:1.0-SNAPSHOT:depasswd (default-cli) @ ympDemo ---
+    [INFO] Use passkey: 16296b50a6db0d0bd45d2e5f84fcdd76
     [INFO] Decrypt password: abc12345678
     [INFO] ------------------------------------------------------------------------
     [INFO] BUILD SUCCESS

@@ -35,12 +35,19 @@ public class EncryptPasswdMojo extends AbstractTmplMojo {
     @Parameter(property = "passwd", required = true)
     private String passwd;
 
+    @Parameter(property = "passkey")
+    private String passkey;
+
     @Parameter(property = "implClass")
     private String implClass;
 
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             IPasswordProcessor _processor = ClassUtils.impl(StringUtils.defaultIfBlank(implClass, DefaultPasswordProcessor.class.getName()), IPasswordProcessor.class, this.getClass());
+            if (StringUtils.isNotBlank(passkey)) {
+                _processor.setPassKey(passkey);
+            }
+            getLog().info("Use passkey: " + _processor.getPassKey());
             getLog().info("Encrypt password: " + _processor.encrypt(passwd));
         } catch (Exception e) {
             throw new MojoExecutionException(e.getMessage(), RuntimeUtils.unwrapThrow(e));
