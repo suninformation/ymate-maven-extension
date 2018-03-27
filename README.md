@@ -57,6 +57,7 @@
     |`tomcat`|Tomcat服务配置生成器|
     |`entity`|数据实体代码生成器|
     |`crud`|CRUD代码生成器|
+    |`dbquery`|数据库SQL查询|
 
 #### 2.1 插件命令详解
 
@@ -1145,6 +1146,98 @@
             }
         ]
     }
+    ```
+##### 2.1.14 `dbquery`：数据库SQL查询
+
+> 执行指定的SQL查询语句并支持以`ConsoleTable`、`Markdown`或`CSV`格式输出结果集；
+
+- 参数列表：
+
+    |参数名称|必须|说明|
+    |---|---|---|
+    |sql|是|SQL查询语句|
+    |format|否|输出格式，可选值：`table`，`markdown`，`csv`，默认值：`table`|
+    |page|否|查询页号，默认值：`0`|
+    |pageSize|否|分页大小，默认值：`20`|
+
+- 数据源及生成规则配置：
+
+    > 在执行数据库SQL查询之前，需要先将默认数据源配置好，请根据实际需求配置并确认`ymp-conf.properties`以下内容：
+
+    ```
+    #-------------------------------------
+    # JDBC持久化模块初始化参数
+    #-------------------------------------
+
+    # 是否显示执行的SQL语句，默认为false
+    ymp.configs.persistence.jdbc.ds.default.show_sql=true
+
+    # 数据库表前缀名称，默认为空
+    ymp.configs.persistence.jdbc.ds.default.table_prefix=ym_
+
+    # 数据库连接字符串，必填参数
+    ymp.configs.persistence.jdbc.ds.default.connection_url=jdbc:mysql://localhost:3306/ymate_demo
+
+    # 数据库访问用户名称，必填参数
+    ymp.configs.persistence.jdbc.ds.default.username=root
+
+    # 数据库访问密码，可选参数
+    ymp.configs.persistence.jdbc.ds.default.password=
+    ```
+
+- 命令示例：
+
+    执行命令：
+
+    ```
+    mvn ymate:dbquery -Dsql="select * from ym_user" -Dpage=1 -Dformat=csv
+    ```
+
+    控制台输出：
+
+    ```
+    Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+    [INFO] Scanning for projects...
+    [INFO]
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Building ympDemo 1.0-SNAPSHOT
+    [INFO] ------------------------------------------------------------------------
+    [INFO]
+    [INFO] --- ymate-maven-plugin:1.0-SNAPSHOT:dbquery (default-cli) @ ympDemo ---
+    [INFO] SQL: select * from ym_user
+    Mar 27, 2018 10:15:36 PM net.ymate.platform.core.YMP init
+    信息:
+    __   ____  __ ____          ____
+    \ \ / /  \/  |  _ \  __   _|___ \
+     \ V /| |\/| | |_) | \ \ / / __) |
+      | | | |  | |  __/   \ V / / __/
+      |_| |_|  |_|_|       \_/ |_____|  Website: http://www.ymate.net/
+    Mar 27, 2018 10:15:36 PM net.ymate.platform.core.YMP init
+    信息: Initializing ymate-platform-core-2.0.5-Release build-20180327-2036 - debug:true - env:unknown
+    Mar 27, 2018 10:15:36 PM net.ymate.platform.persistence.jdbc.JDBC init
+    信息: Initializing ymate-platform-persistence-jdbc-2.0.5-Release build-20180327-2036
+    Mar 27, 2018 10:15:36 PM net.ymate.platform.persistence.Persistence init
+    信息: Initializing ymate-platform-persistence-2.0.5-Release build-20180327-2036
+    Mar 27, 2018 10:15:36 PM net.ymate.platform.core.YMP init
+    信息: Initialization completed, Total time: 241ms
+    Mar 27, 2018 10:15:36 PM net.ymate.platform.persistence.jdbc.base.AbstractOperator execute
+    信息: [SELECT count(1) FROM (select * from ym_user) c_t][][1][9ms]
+    Mar 27, 2018 10:15:36 PM net.ymate.platform.persistence.jdbc.base.AbstractOperator execute
+    信息: [select * from ym_user limit 0, 20][][0][1ms]
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Record count: 0
+    [INFO] Current page: 1/0 - 20
+    [INFO] ------------------------------------------------------------------------
+    
+    // Empty... :p
+    
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time: 0.937s
+    [INFO] Finished at: Tue Mar 27 22:15:36 CST 2018
+    [INFO] Final Memory: 10M/245M
+    [INFO] ------------------------------------------------------------------------
     ```
 
 
