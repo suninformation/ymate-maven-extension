@@ -52,6 +52,9 @@ public class DBQueryMojo extends AbstractTmplMojo {
     @Parameter(property = "pageSize", defaultValue = "0")
     private int pageSize;
 
+    @Parameter(property = "escape")
+    private boolean escape;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (!StringUtils.containsIgnoreCase(sql, "select")) {
             throw new MojoExecutionException("The execution of the SQL statement must contain the SELECT keyword.");
@@ -87,9 +90,11 @@ public class DBQueryMojo extends AbstractTmplMojo {
                     //
                     final ConsoleTableBuilder _console = ConsoleTableBuilder.create(_helper.getColumnNames().length);
                     if (StringUtils.equalsIgnoreCase(format, "markdown")) {
-                        _console.markdown();
+                        _console.escape().markdown();
                     } else if (StringUtils.equalsIgnoreCase(format, "csv")) {
                         _console.csv();
+                    } else if (escape) {
+                        _console.escape();
                     }
                     System.out.println();
                     //
@@ -102,9 +107,6 @@ public class DBQueryMojo extends AbstractTmplMojo {
                             ConsoleTableBuilder.Row _line = _console.addRow();
                             for (String _cName : wrapper.getColumnNames()) {
                                 String _value = BlurObject.bind(wrapper.getObject(_cName)).toStringValue();
-                                _value = StringUtils.replace(_value, "\r", "[\\r]");
-                                _value = StringUtils.replace(_value, "\n", "[\\n]");
-                                _value = StringUtils.replace(_value, "\t", "[\\t]");
                                 _line.addColumn(_value);
                             }
                             return true;
