@@ -46,10 +46,12 @@ public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first
         return owner.getModule(${moduleName?cap_first}.class);
     }
 
+    @Override
     public String getName() {
         return I${moduleName?cap_first}.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -64,10 +66,12 @@ public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -78,11 +82,12 @@ public class ${moduleName?cap_first} implements IModule, I${moduleName?cap_first
             __owner = null;
         }
     }
-
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public I${moduleName?cap_first}ModuleCfg getModuleCfg() {
         return __moduleCfg;
     }

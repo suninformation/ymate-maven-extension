@@ -36,7 +36,8 @@ public class ${repositoryName?cap_first}<#if withInterface> implements I${reposi
     /**
     * 自定义SQL
     */
-    @Repository("select * from table1 where hash = ${r'${hash}'}")
+    @Repository("select * from table1 where hash = ${r'${hash}'}")<#if withInterface>
+    @Override</#if>
     public IResultSet<Object[]> execSql(String hash, IResultSet<Object[]> results) throws Exception {
         return results;
     }
@@ -44,7 +45,8 @@ public class ${repositoryName?cap_first}<#if withInterface> implements I${reposi
     /**
     * 读取配置文件中的SQL
     */
-    @Repository(item = "demo_query")
+    @Repository(item = "demo_query")<#if withInterface>
+    @Override</#if>
     public List<Object[]> execQuery(String hash, IResultSet<Object[]>... results) throws Exception {
         return results[0].getResultData();
     }

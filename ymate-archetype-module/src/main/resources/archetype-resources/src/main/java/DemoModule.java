@@ -44,10 +44,12 @@ public class DemoModule implements IModule, IDemoModule {
         return owner.getModule(DemoModule.class);
     }
 
+    @Override
     public String getName() {
         return IDemoModule.MODULE_NAME;
     }
 
+    @Override
     public void init(YMP owner) throws Exception {
         if (!__inited) {
             //
@@ -62,10 +64,12 @@ public class DemoModule implements IModule, IDemoModule {
         }
     }
 
+    @Override
     public boolean isInited() {
         return __inited;
     }
 
+    @Override
     public void destroy() throws Exception {
         if (__inited) {
             __inited = false;
@@ -77,14 +81,17 @@ public class DemoModule implements IModule, IDemoModule {
         }
     }
 
+    @Override
     public YMP getOwner() {
         return __owner;
     }
 
+    @Override
     public IDemoModuleCfg getModuleCfg() {
         return __moduleCfg;
     }
 
+    @Override
     public void sayHi(String youName) {
         System.out.println("Hi " + youName + ", " + getModuleCfg().getModuleParamTwo());
     }
