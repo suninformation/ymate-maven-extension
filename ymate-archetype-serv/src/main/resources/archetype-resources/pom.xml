@@ -15,6 +15,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <ymate.platform.version>2.0.5</ymate.platform.version>
     </properties>
 
     <build>
@@ -88,22 +89,22 @@
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-configuration</artifactId>
-            <version>2.0.4</version>
+            <version>${ymate.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-log-jcl</artifactId>
-            <version>2.0.4</version>
+            <version>${ymate.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-log-slf4j</artifactId>
-            <version>2.0.4</version>
+            <version>${ymate.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>net.ymate.platform</groupId>
             <artifactId>ymate-platform-serv</artifactId>
-            <version>2.0.4</version>
+            <version>${ymate.platform.version}</version>
         </dependency>
     </dependencies>
 </project>

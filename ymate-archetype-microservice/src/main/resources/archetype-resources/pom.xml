@@ -22,9 +22,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ymp_version>2.0.5</ymp_version>
-        <ymp_framework_version>2.0.5</ymp_framework_version>
-        <ymp_port_version>1.0-SNAPSHOT</ymp_port_version>
+        <ymate.platform.version>2.0.5</ymate.platform.version>
+        <ymate.framework.version>2.0.5</ymate.framework.version>
+        <ymate.port.version>1.0-SNAPSHOT</ymate.port.version>
+        <tomcat.version>7.0.86</tomcat.version>
     </properties>
 
     <build>
@@ -144,52 +145,52 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>7.0.82</version>
+                <version>${tomcat.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-logging-juli</artifactId>
-                <version>7.0.82</version>
+                <version>${tomcat.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.platform</groupId>
                 <artifactId>ymate-platform-log</artifactId>
-                <version>${ymp_version}</version>
+                <version>${ymate.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.platform</groupId>
                 <artifactId>ymate-platform-log-jcl</artifactId>
-                <version>${ymp_version}</version>
+                <version>${ymate.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.platform</groupId>
                 <artifactId>ymate-platform-log-slf4j</artifactId>
-                <version>${ymp_version}</version>
+                <version>${ymate.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.platform</groupId>
                 <artifactId>ymate-platform-webmvc</artifactId>
-                <version>${ymp_version}</version>
+                <version>${ymate.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.platform</groupId>
                 <artifactId>ymate-platform-persistence-jdbc</artifactId>
-                <version>${ymp_version}</version>
+                <version>${ymate.platform.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.framework</groupId>
                 <artifactId>ymate-framework-commons</artifactId>
-                <version>${ymp_framework_version}</version>
+                <version>${ymate.framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.framework</groupId>
                 <artifactId>ymate-framework-core</artifactId>
-                <version>${ymp_framework_version}</version>
+                <version>${ymate.framework.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpmime</artifactId>
-                <version>4.5.3</version>
+                <version>4.5.5</version>
                 <exclusions>
                     <exclusion>
                         <groupId>commons-codec</groupId>
@@ -200,17 +201,17 @@
             <dependency>
                 <groupId>net.ymate.port</groupId>
                 <artifactId>ymate-port-core</artifactId>
-                <version>${ymp_port_version}</version>
+                <version>${ymate.port.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.port</groupId>
                 <artifactId>ymate-port-http</artifactId>
-                <version>${ymp_port_version}</version>
+                <version>${ymate.port.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.ymate.port</groupId>
                 <artifactId>ymate-port-starter</artifactId>
-                <version>${ymp_port_version}</version>
+                <version>${ymate.port.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
