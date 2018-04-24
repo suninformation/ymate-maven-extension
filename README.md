@@ -58,6 +58,7 @@
     |`entity`|数据实体代码生成器|
     |`crud`|CRUD代码生成器|
     |`dbquery`|数据库SQL查询|
+    |`init`|初始化基于YMP框架工程所需的各类配置文件及必要的目录结构|
 
 #### 2.1 插件命令详解
 
@@ -1241,6 +1242,50 @@
     [INFO] ------------------------------------------------------------------------
     ```
 
+##### 2.1.15 `init`：初始化基于YMP框架工程所需的各类配置文件及必要的目录结构
+
+- 命令示例：
+
+    执行命令：
+
+    ```
+    mvn ymate:init -Doverwrite=true
+    ```
+
+    控制台输出：
+    
+    ```
+    Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+    [INFO] Scanning for projects...
+    [INFO]
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Building ympDemo 1.0-SNAPSHOT
+    [INFO] ------------------------------------------------------------------------
+    [INFO]
+    [INFO] --- ymate-maven-plugin:1.0-SNAPSHOT:init (default-cli) @ ympDemo ---
+    [INFO] Output file: /Users/.../ympDemo/src/main/resources/c3p0.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/resources/dbcp.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/resources/ehcache.xml
+    [INFO] Output file: /Users/.../ympDemo/src/main/resources/simplelog.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/resources/simplelogger.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/resources/ymp-conf.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/web.xml
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/cfgs/log4j.xml
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/logs/.log
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/templates/.tmpl
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/i18n/messages.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/i18n/messages_zh_CN.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/i18n/validation.properties
+    [INFO] Output file: /Users/.../ympDemo/src/main/webapp/WEB-INF/i18n/validation_zh_CN.properties
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time: 0.499s
+    [INFO] Finished at: Wed Apr 25 02:45:04 CST 2018
+    [INFO] Final Memory: 11M/309M
+    [INFO] ------------------------------------------------------------------------
+    ```
+        
 
 #### One More Thing
 
