@@ -59,6 +59,7 @@
     |`crud`|CRUD代码生成器|
     |`dbquery`|数据库SQL查询|
     |`init`|初始化基于YMP框架工程所需的各类配置文件及必要的目录结构|
+    |`configuration`|配置体系目录结构生成器|
 
 #### 2.1 插件命令详解
 
@@ -1285,7 +1286,74 @@
     [INFO] Final Memory: 11M/309M
     [INFO] ------------------------------------------------------------------------
     ```
-        
+
+##### 2.1.16 `configuration`：配置体系目录结构生成器
+
+- 参数列表：
+
+    |参数名称|必须|说明|
+    |---|---|---|
+    |homeDir|否|配置体系根路径，默认为当前项目基准路径，若指定路径不存在则创建之|
+    |projectName|否|项目名称，默认值：`空`|
+    |moduleNames|否|模块名称集合，默认值：`空`，多个用`,`分隔|
+    |pluginNames|否|插件名称集合，默认值：`空`，多个用`,`分隔|
+    |repair|否|是否执行缺失文件修复(除目录结构自动补全外，该参数将对缺失的文件进行补全)，默认值：false|
+
+- 命令示例：
+
+    执行命令：
+
+    ```
+    mvn ymate:configuration -DprojectName=default -DmoduleNames=webapp,demo -Drepair=true
+    ```
+
+    控制台输出：
+    
+    ```
+    Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF-8
+    [INFO] Scanning for projects...
+    [INFO]
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Building ympDemo 1.0-SNAPSHOT
+    [INFO] ------------------------------------------------------------------------
+    [INFO]
+    [INFO] --- ymate-maven-plugin:1.0-SNAPSHOT:configuration (default-cli) @ ympDemo ---
+    [INFO] Base directory: /Users/.../ympDemo
+    [INFO] Create directory: /Users/.../ympDemo/bin
+    [INFO] Create directory: /Users/.../ympDemo/dist
+    [INFO] Create directory: /Users/.../ympDemo/projects
+    [INFO] Create directory: /Users/.../ympDemo/cfgs
+    [INFO] Create directory: /Users/.../ympDemo/classes
+    [INFO] Create directory: /Users/.../ympDemo/lib
+    [INFO] Create directory: /Users/.../ympDemo/logs
+    [INFO] Create directory: /Users/.../ympDemo/temp
+    [INFO] Output file: /Users/.../ympDemo/cfgs/log4j.xml
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/cfgs
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/classes
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/lib
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/logs
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/temp
+    [INFO] Output file: /Users/.../ympDemo/projects/default/cfgs/log4j.xml
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/webapp/cfgs
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/webapp/classes
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/webapp/lib
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/webapp/logs
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/webapp/temp
+    [INFO] Output file: /Users/.../ympDemo/projects/default/modules/webapp/cfgs/log4j.xml
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/demo/cfgs
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/demo/classes
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/demo/lib
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/demo/logs
+    [INFO] Create directory: /Users/.../ympDemo/projects/default/modules/demo/temp
+    [INFO] Output file: /Users/.../ympDemo/projects/default/modules/demo/cfgs/log4j.xml
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time: 0.458s
+    [INFO] Finished at: Fri May 18 11:56:20 CST 2018
+    [INFO] Final Memory: 9M/245M
+    [INFO] ------------------------------------------------------------------------
+    ```
 
 #### One More Thing
 
