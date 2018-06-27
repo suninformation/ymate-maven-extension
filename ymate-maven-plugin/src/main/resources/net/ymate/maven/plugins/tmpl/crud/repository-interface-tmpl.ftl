@@ -98,6 +98,16 @@ public interface I${api.name?cap_first}Repository {
     ${api.model} find(${api.primary.type?cap_first} ${api.primary.name}) throws Exception;
 
     /**
+     * 查询指定主键的数据记录
+     *
+     * @param ${api.primary.name} <#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}<#else>${api.primary.description}</#if>
+     * @param fields 过滤字段集合
+     * @return 返回数据对象
+     * @throws Exception 可能产生的任何异常
+     */
+     ${api.model} find(${api.primary.type?cap_first} ${api.primary.name}, Fields fields) throws Exception;
+
+    /**
      * 条件查询
      *
      <#if api.primary.filter?? && api.primary.filter.enabled>

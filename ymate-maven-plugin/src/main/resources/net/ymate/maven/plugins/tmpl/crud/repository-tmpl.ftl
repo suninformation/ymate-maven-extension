@@ -148,6 +148,14 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     }
 
     @Override
+    public ${api.model} find(${api.primary.type?cap_first} ${api.primary.name}, Fields fields) throws Exception {
+        if (<#if (api.primary.type?lower_case == 'string')>StringUtils.isBlank(${api.primary.name})<#else>${api.primary.name} == null</#if>) {
+            throw new NullArgumentException("${api.primary.name}");
+        }
+        return ${api.model}.builder().id(${api.primary.name}).build().load(fields, null);
+    }
+
+    @Override
     public IResultSet<${api.model}> find(<#if api.primary.filter?? && api.primary.filter.enabled>final ${api.primary.type?cap_first} ${api.primary.name}, </#if><#if formbean>final ${app.packageName}.dto.${api.name?cap_first}FormBean ${api.name}Form, <#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>final ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, final ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if></#if>final Fields fields, final OrderBy orderBy, final int page, final int pageSize) throws Exception {
         return JDBC.get().openSession(new ISessionExecutor<IResultSet<${api.model}>>() {
             @Override
@@ -176,6 +184,10 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                     </#if><#else><#if p.filter.region && (p.type?lower_case == "integer" || p.type?lower_case == "long")>//
                     if (<#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if> != null && <#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if> != null) {
                         _cond.and().between(${api.model}.FIELDS.${p.column?upper_case}, <#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if>, <#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if>);
+                    } else if (beginCreateTime != null) {
+                        _cond.and().gtEq(${api.model}.FIELDS.${p.column?upper_case}).param(<#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if>);
+                    } else if (endCreateTime != null) {
+                        _cond.and().ltEq(${api.model}.FIELDS.${p.column?upper_case}).param(<#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if>);
                     }
                     <#else>//
                     if (<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if> != null) {
