@@ -123,20 +123,23 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
     <#if (api.params?? && api.params?size > 0)><#if !api.updateDisabled>@Override
     @Transaction
     public ${api.model} update(${api.primary.type?cap_first} ${api.primary.name}, <#if formbean>${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>String<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if><#if api.timestamp>, long lastModifyTime</#if>) throws Exception {
-        ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.MYSQL);
-        <#if api.timestamp>if (lastModifyTime > 0) {
-            long _current = BlurObject.bind(_target.getLastModifyTime()).toLongValue();
-            if (_current != lastModifyTime) {
-                throw new DataVersionMismatchException("Data version mismatch. last: " + lastModifyTime + ", current: " + _current);
+        ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.DEFAULT);
+        if (_target != null) {
+            <#if api.timestamp>if (lastModifyTime > 0) {
+                long _current = BlurObject.bind(_target.getLastModifyTime()).toLongValue();
+                if (_current != lastModifyTime) {
+                    throw new DataVersionMismatchException("Data version mismatch. last: " + lastModifyTime + ", current: " + _current);
+                }
             }
+            </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
+            _state.bind().bind()
+                    <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
+                    .${p.name}(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>)
+                    </#if></#list><#if api.timestamp>
+                    .lastModifyTime(System.currentTimeMillis())</#if>;
+            return _state.unbind().update(Fields.create(_state.getChangedPropertyNames()));
         }
-        </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
-        _state.bind().bind()
-                <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
-                .${p.name}(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>)
-                </#if></#list><#if api.timestamp>
-                .lastModifyTime(System.currentTimeMillis())</#if>;
-        return _state.unbind().update(Fields.create(_state.getChangedPropertyNames()));
+        return null;
     }</#if></#if>
 
     @Override

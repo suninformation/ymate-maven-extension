@@ -26,7 +26,7 @@ public class ${api.name?cap_first}UpdateFormBean implements Serializable {
     * ${p.description}
     */</#if>
     <#if p.validation??><#if p.required?? && p.required>
-    @VRequried</#if><#if p.validation.regex?? && (p.validation.regex?length > 0)>
+    @VRequired</#if><#if p.validation.regex?? && (p.validation.regex?length > 0)>
     @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
     @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
     @VMobile</#if><#if p.validation.datetime?? && p.validation.datetime>

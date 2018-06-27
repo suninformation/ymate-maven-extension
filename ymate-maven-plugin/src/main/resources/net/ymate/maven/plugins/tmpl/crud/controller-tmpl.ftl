@@ -63,7 +63,7 @@ public class ${api.name?cap_first}Controller {
      */
     @RequestMapping("/query")<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_QUERY")</#if>
-    public IView __query(<#if api.primary.filter?? && api.primary.filter.enabled>@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
+    public IView __query(<#if api.primary.filter?? && api.primary.filter.enabled>@VRequired<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
                          @VNumeric</#if><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
                          @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
                          @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
@@ -129,7 +129,7 @@ public class ${api.name?cap_first}Controller {
     @FileUpload</#if>
     public IView __create(<#if formbean>@ModelBind ${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
 
-                          </#if><#if p.required?? && p.required>@VRequried</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
+                          </#if><#if p.required?? && p.required>@VRequired</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
                           @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
                           @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
                           @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
@@ -154,7 +154,7 @@ public class ${api.name?cap_first}Controller {
      */
     @RequestMapping("/detail")<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_DETAIL")</#if>
-    public IView __detail(@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
+    public IView __detail(@VRequired<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
                           @VNumeric</#if><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
                           @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
                           @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
@@ -179,7 +179,7 @@ public class ${api.name?cap_first}Controller {
     @RequestMapping(value = "/update", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_UPDATE")</#if><#if upload>
     @FileUpload</#if>
-    public IView __update(@VRequried<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
+    public IView __update(@VRequired<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
                           @VNumeric</#if><#if ((api.primary.validation.min?? && api.primary.validation.min > 0) && (api.primary.validation.max?? && api.primary.validation.max > 0))>
                           @VLength(min = ${api.primary.validation.min}, max = ${api.primary.validation.max})<#elseif (api.primary.validation.min?? && api.primary.validation.min > 0)>
                           @VLength(min = ${api.primary.validation.min})<#elseif (api.primary.validation.max?? && api.primary.validation.max > 0)>
@@ -191,7 +191,7 @@ public class ${api.name?cap_first}Controller {
                           <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
 
                           </#if><#if p.required?? && p.required>
-                          @VRequried</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
+                          @VRequired</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
                           @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
                           @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
                           @VEmail</#if><#if p.validation.mobile?? && p.validation.mobile>
@@ -218,7 +218,7 @@ public class ${api.name?cap_first}Controller {
      */
     @RequestMapping(value = "/remove", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_REMOVE")</#if>
-    public IView __remove(@VRequried<#if api.primary.validation??><#if api.primary.label?? && (api.primary.label?length > 0)>
+    public IView __remove(@VRequired<#if api.primary.validation??><#if api.primary.label?? && (api.primary.label?length > 0)>
                           @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first}[] ${api.primary.name}) throws Exception {
 
         __repository.remove(${api.primary.name});
@@ -237,8 +237,8 @@ public class ${api.name?cap_first}Controller {
      */
     @RequestMapping(value = "/status/${p.name?lower_case}", method = Type.HttpMethod.POST)<#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_STATUS_${p.name?upper_case}")</#if>
-    public IView __status${p.name?cap_first}(@VRequried<#if api.primary.label?? && (api.primary.label?length > 0)>
-                         @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first}[] ${api.primary.name},<#if p.reason> @VRequried</#if> @RequestParam String reason) throws Exception {
+    public IView __status${p.name?cap_first}(@VRequired<#if api.primary.label?? && (api.primary.label?length > 0)>
+                         @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first}[] ${api.primary.name},<#if p.reason> @VRequired</#if> @RequestParam String reason) throws Exception {
 
         __repository.update(${api.primary.name}, ${api.model}.FIELDS.${p.column?upper_case}, <#if (p.type?lower_case == 'string')>"${p.value}"<#else>${p.value}</#if>);
         return WebResult.SUCCESS().toJSON();
