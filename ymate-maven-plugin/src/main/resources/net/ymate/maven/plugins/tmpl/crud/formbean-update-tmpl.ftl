@@ -34,7 +34,8 @@ public class ${api.name?cap_first}UpdateFormBean implements Serializable {
     @VNumeric</#if><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
     @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if><#if p.label?? && (p.label?length > 0)>
     @VField(label = "${p.label}")</#if></#if>
-    @RequestParam
+    @RequestParam<#if withDoc>
+    @ApiParam(value = "<#if p.label?? && (p.label?length > 0)>${p.label}</#if>"<#if p.required?? && p.required>, required = true</#if>) </#if>
     private ${p.type?cap_first} ${p.name};
 
     </#if></#list></#if>

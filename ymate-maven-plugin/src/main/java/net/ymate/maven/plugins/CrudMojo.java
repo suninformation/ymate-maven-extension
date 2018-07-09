@@ -64,6 +64,9 @@ public class CrudMojo extends AbstractTmplMojo {
     @Parameter(property = "formBean")
     private boolean formBean;
 
+    @Parameter(property = "withDoc")
+    private boolean withDoc;
+
     @Parameter(property = "mapping", defaultValue = "v1")
     private String mapping;
 
@@ -104,6 +107,7 @@ public class CrudMojo extends AbstractTmplMojo {
                             _props.put("upload", _api.isUpload());
                             //
                             _props.put("formbean", formBean && !_api.getParams().isEmpty());
+                            _props.put("withDoc", withDoc);
                             //
                             if (_isQuery) {
                                 _sqlMap.put(_api.getName(), _api.getQuery());
@@ -489,13 +493,13 @@ public class CrudMojo extends AbstractTmplMojo {
         public String[] toArray() {
             List<String> _roleList = new ArrayList<String>();
             if (this.admin) {
-                _roleList.add("ISecurity.Role.ADMIN");
+                _roleList.add("RoleType.ADMIN");
             }
             if (this.operator) {
-                _roleList.add("ISecurity.Role.OPERATOR");
+                _roleList.add("RoleType.OPERATOR");
             }
             if (this.user) {
-                _roleList.add("ISecurity.Role.USER");
+                _roleList.add("RoleType.USER");
             }
             return _roleList.toArray(new String[0]);
         }

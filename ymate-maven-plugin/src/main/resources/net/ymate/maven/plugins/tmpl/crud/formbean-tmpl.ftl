@@ -1,6 +1,7 @@
 <#setting number_format="#">
 package ${app.packageName}.dto;
 
+<#if withDoc>import net.ymate.apidocs.annotation.*;</#if>
 import net.ymate.framework.validation.*;
 import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.validation.annotation.*;
@@ -33,7 +34,8 @@ public class ${api.name?cap_first}FormBean implements Serializable {
     @VNumeric</#if><#if ((p.validation.min?? && p.validation.min > 0) && (p.validation.max?? && p.validation.max > 0))>
     @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if><#if p.label?? && (p.label?length > 0)>
     @VField(label = "${p.label}<#if p.filter.region>范围最小值</#if>")</#if></#if>
-    @RequestParam
+    @RequestParam<#if withDoc>
+    @ApiParam(value = "<#if p.label?? && (p.label?length > 0)>${p.label}<#if p.filter.region>范围最小值</#if></#if>") </#if>
     private ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if>;<#if p.filter.region>
     <#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
 
@@ -45,7 +47,8 @@ public class ${api.name?cap_first}FormBean implements Serializable {
     @VLength(min = ${p.validation.min}, max = ${p.validation.max})<#elseif (p.validation.min?? && p.validation.min > 0)>@VLength(min = ${p.validation.min})<#elseif (p.validation.max?? && p.validation.max > 0)>@VLength(max = ${p.validation.max})</#if>
     @VCompare(with = "begin${p.name?cap_first}"<#if p.label?? && (p.label?length > 0)>, withLabel = "${p.label}范围最小值"</#if>)<#if p.label?? && (p.label?length > 0)>
     @VField(label = "${p.label}<#if p.filter.region>范围最大值</#if>")</#if></#if>
-    @RequestParam
+    @RequestParam<#if withDoc>
+    @ApiParam(value = "<#if p.label?? && (p.label?length > 0)>${p.label}<#if p.filter.region>范围最大值</#if></#if>") </#if>
     private ${p.type?cap_first}  end${p.name?cap_first};</#if>
 
     </#if></#if></#list></#if>
