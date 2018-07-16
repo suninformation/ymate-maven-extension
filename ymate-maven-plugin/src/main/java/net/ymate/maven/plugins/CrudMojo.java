@@ -396,10 +396,10 @@ public class CrudMojo extends AbstractTmplMojo {
         public void checkDefaultValue() {
             if (this.enabled) {
                 this.prefix = StringUtils.trimToEmpty(prefix).toUpperCase();
-                //
-                if (this.permissions == null) {
-                    this.permissions = new ArrayList<String>();
-                }
+            }
+            //
+            if (this.permissions == null) {
+                this.permissions = new ArrayList<String>();
             }
         }
 

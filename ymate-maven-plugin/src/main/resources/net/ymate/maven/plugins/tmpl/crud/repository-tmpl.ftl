@@ -187,9 +187,9 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                     </#if><#else><#if p.filter.region && (p.type?lower_case == "integer" || p.type?lower_case == "long")>//
                     if (<#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if> != null && <#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if> != null) {
                         _cond.and().between(${api.model}.FIELDS.${p.column?upper_case}, <#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if>, <#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if>);
-                    } else if (beginCreateTime != null) {
+                    } else if (<#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if> != null) {
                         _cond.and().gtEq(${api.model}.FIELDS.${p.column?upper_case}).param(<#if formbean>${api.name}Form.getBegin${p.name?cap_first}()<#else>begin${p.name?cap_first}</#if>);
-                    } else if (endCreateTime != null) {
+                    } else if (<#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if> != null) {
                         _cond.and().ltEq(${api.model}.FIELDS.${p.column?upper_case}).param(<#if formbean>${api.name}Form.getEnd${p.name?cap_first}()<#else>end${p.name?cap_first}</#if>);
                     }
                     <#else>//
