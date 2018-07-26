@@ -132,12 +132,15 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                 }
             }
             </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
-            _state.bind().bind()
+            ${api.model} _entity = _state.bind().bind()
                     <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
                     .${p.name}(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>)
-                    </#if></#list><#if api.timestamp>
-                    .lastModifyTime(System.currentTimeMillis())</#if>;
-            return _state.unbind().update(Fields.create(_state.getChangedPropertyNames()));
+                    </#if></#list>.build();
+            String[] _propNames = _state.getChangedPropertyNames();
+            if (ArrayUtils.isNotEmpty(_propNames)) {
+                <#if api.timestamp>_entity.setLastModifyTime(System.currentTimeMillis());</#if>
+                return _state.unbind().update(Fields.create(_propNames)<#if api.timestamp>.add(${api.model}.FIELDS.LAST_MODIFY_TIME)</#if>);
+            }
         }
         return null;
     }</#if></#if>
