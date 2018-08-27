@@ -83,17 +83,12 @@ public class CrudMojo extends AbstractTmplMojo {
                     Map<String, Object> _sqlMap = new HashMap<String, Object>();
                     //
                     for (ApiInfo _api : _application.getApis()) {
-                        boolean _matched = false;
-                        if (!ArrayUtils.isEmpty(filter)) {
-                            for (String _item : filter) {
-                                if (StringUtils.equalsIgnoreCase(_item, _api.getName())) {
-                                    getLog().info("API Name: " + _api.getName() + " has been filtered.");
-                                    _matched = true;
-                                    break;
-                                }
-                            }
+                        boolean _matched = true;
+                        if (!ArrayUtils.isEmpty(filter) && !ArrayUtils.contains(filter, _api.getName())) {
+                            getLog().info("API Name: " + _api.getName() + " has been filtered.");
+                            _matched = false;
                         }
-                        if (!_matched) {
+                        if (_matched) {
                             _api.checkDefaultValue();
                             //
                             boolean _isQuery = StringUtils.equalsIgnoreCase(_api.getModel(), "query");
@@ -179,17 +174,12 @@ public class CrudMojo extends AbstractTmplMojo {
             //
             List<String> _tables = TableInfo.getTableNames(_database);
             for (String _tableName : _tables) {
-                boolean _matched = false;
-                if (!ArrayUtils.isEmpty(filter)) {
-                    for (String _item : filter) {
-                        if (StringUtils.equalsIgnoreCase(_item, _tableName)) {
-                            getLog().info("Table Name: " + _tableName + " has been filtered.");
-                            _matched = true;
-                            break;
-                        }
-                    }
+                boolean _matched = true;
+                if (!ArrayUtils.isEmpty(filter) && !ArrayUtils.contains(filter, _tableName)) {
+                    getLog().info("Table Name: " + _tableName + " has been filtered.");
+                    _matched = false;
                 }
-                if (!_matched) {
+                if (_matched) {
                     TableInfo _tableInfo = TableInfo.create(_database.getDefaultConnectionHolder(), _config, _tableName, false);
                     if (_tableInfo != null) {
                         ApiInfo _info = new ApiInfo();
