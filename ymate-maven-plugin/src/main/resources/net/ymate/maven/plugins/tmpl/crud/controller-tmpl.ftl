@@ -41,7 +41,7 @@ import java.util.*;
 @After({<#list intercept.after as p>${p}.class<#if p_has_next>,</#if></#list>})</#if><#if intercept.around?? && (intercept.around?size > 0)>
 @Around({<#list intercept.around as p>${p}.class<#if p_has_next>,</#if></#list>})</#if><#if intercept.params?? && (intercept.params?size > 0)>
 @ContextParam({<#list intercept.params?keys as p>@ParamItem(key = "${p}", value = "${intercept.params[p]}")<#if p_has_next>,</#if></#list>})</#if></#if><#if withDoc>
-@Api(value = "<#if api.description?? && (api.description?length > 0)>${api.description}</#if>", description = "针对权限<#if api.description?? && (api.description?length > 0)>${api.description}</#if>提供添加、查询、更新和删除等操作。")</#if>
+@Api(value = "<#if api.description?? && (api.description?length > 0)>${api.description}<#else>${api.mapping}</#if>", description = "针对权限<#if api.description?? && (api.description?length > 0)>${api.description}<#else>${api.mapping}</#if>提供添加、查询、更新和删除等操作。")</#if>
 public class ${api.name?cap_first}Controller {
 
     @Inject

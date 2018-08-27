@@ -20,7 +20,7 @@ import java.io.Serializable;
 */
 public class ${api.name?cap_first}UpdateFormBean implements Serializable {
 
-    <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime')><#else>
+    <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
     <#if (p.description??)>
     /**
     * ${p.description}
@@ -40,7 +40,7 @@ public class ${api.name?cap_first}UpdateFormBean implements Serializable {
 
     </#if></#list></#if>
 
-    <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime')><#else>
+    <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
     public ${p.type?cap_first} get${p.name?cap_first}() {
         return ${p.name};
     }
