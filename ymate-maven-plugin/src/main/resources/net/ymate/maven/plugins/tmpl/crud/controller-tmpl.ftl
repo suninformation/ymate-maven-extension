@@ -76,7 +76,7 @@ public class ${api.name?cap_first}Controller {
                          @VLength(max = ${api.primary.validation.max})</#if><#if api.primary.label?? && (api.primary.label?length > 0)>
                          @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name}, </#if>
 
-                        <#if formbean><#if withDoc>@ApiParam(model = true) </#if>@ModelBind ${app.packageName}.dto.${api.name?cap_first}FormBean ${api.name}Form, <#else>
+                        <#if formbean><#if withDoc>@ApiParam(model = true) </#if>@ModelBind @VModel ${app.packageName}.dto.${api.name?cap_first}FormBean ${api.name}Form, <#else>
 
                          <#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if withDoc>@ApiParam("<#if p.label?? && (p.label?length > 0)>${p.label}<#if p.filter.region>范围最小值</#if></#if>") </#if><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
                          @VRegex(regex = "${p.validation.regex}")</#if><#if p.validation.email?? && p.validation.email>
@@ -135,7 +135,7 @@ public class ${api.name?cap_first}Controller {
     @Permission("${security.prefix}${api.name?upper_case}_CREATE")<#if withDoc>
     @ApiSecurity(roles = @ApiRole(name = "ADMIN", description = "管理员"), value = @ApiPermission(name = "${security.prefix}${api.name?upper_case}_CREATE", description = "<#if api.description?? && (api.description?length > 0)>${api.description}</#if>添加"))</#if></#if><#if upload>
     @FileUpload</#if>
-    public IView __create(<#if formbean><#if withDoc>@ApiParam(model = true) </#if>@ModelBind ${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
+    public IView __create(<#if formbean><#if withDoc>@ApiParam(model = true) </#if>@ModelBind @VModel ${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
 
                           </#if><#if withDoc>@ApiParam(value = "<#if p.label?? && (p.label?length > 0)>${p.label}</#if>"<#if p.required?? && p.required>, required = true</#if>) </#if><#if p.required?? && p.required>@VRequired</#if><#if p.upload.enabled && (p.min > 0 || p.min > 0) || (p.upload.contentType?? && p.upload.contentType?length > 0)>
                           @VUploadFile(min=${p.min}, max=${p.max}, contentTypes={<#list p.upload.contentTypes as t>"${t}"<#if t_has_next>, </#if></#list>})<#else><#if p.validation??><#if p.validation.regex?? && (p.validation.regex?length > 0)>
@@ -198,7 +198,7 @@ public class ${api.name?cap_first}Controller {
                           @VLength(max = ${api.primary.validation.max})</#if><#if api.primary.label?? && (api.primary.label?length > 0)>
                           @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name},
 
-                          <#if formbean><#if withDoc>@ApiParam(model = true) </#if>@ModelBind ${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else>
+                          <#if formbean><#if withDoc>@ApiParam(model = true) </#if>@ModelBind @VModel ${app.packageName}.dto.${api.name?cap_first}UpdateFormBean ${api.name}Form<#else>
 
                           <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>,
 
