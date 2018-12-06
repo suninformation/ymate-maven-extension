@@ -4,7 +4,6 @@
 package ${package}.server;
 
 import net.ymate.platform.core.YMP;
-import net.ymate.platform.serv.IServer;
 import net.ymate.platform.serv.Servs;
 import net.ymate.platform.serv.annotation.Server;
 import net.ymate.platform.serv.nio.INioSession;
@@ -20,7 +19,7 @@ import java.io.IOException;
 @Server
 public class NioServer extends NioServerListener {
 
-    private final Logger _LOG = LoggerFactory.getLogger(NioServer.class);
+    private final static Logger _LOG = LoggerFactory.getLogger(NioServer.class);
 
     @Override
     public void onSessionAccepted(INioSession session) throws IOException {
@@ -42,7 +41,6 @@ public class NioServer extends NioServerListener {
      */
     public static void main(String[] args) throws Exception {
         YMP.get().init();
-        IServer _server = Servs.get().getServer(NioServer.class);
-        _server.start();
+        Servs.get().getServer(NioServer.class).start();
     }
 }

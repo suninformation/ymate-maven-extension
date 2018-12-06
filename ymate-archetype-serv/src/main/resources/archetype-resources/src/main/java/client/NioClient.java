@@ -3,6 +3,10 @@
 #set( $symbol_escape = '\' )
 package ${package}.client;
 
+import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.util.RuntimeUtils;
+import net.ymate.platform.serv.IClient;
+import net.ymate.platform.serv.Servs;
 import net.ymate.platform.serv.annotation.Client;
 import net.ymate.platform.serv.impl.DefaultHeartbeatService;
 import net.ymate.platform.serv.impl.DefaultReconnectService;
@@ -19,10 +23,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * NioClient
  */
 @Client(reconnectClass = DefaultReconnectService.class,
-        hearbeatClass = DefaultHeartbeatService.class)
+        heartbeatClass = DefaultHeartbeatService.class)
 public class NioClient extends NioClientListener {
 
-    private final Logger _LOG = LoggerFactory.getLogger(NioClient.class);
+    private final static Logger _LOG = LoggerFactory.getLogger(NioClient.class);
 
     private static AtomicLong _idx = new AtomicLong(0);
 
@@ -35,19 +39,32 @@ public class NioClient extends NioClientListener {
     @Override
     public void onMessageReceived(Object message, INioSession session) throws IOException {
         _LOG.info(session + "--->" + message);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        long _i = _idx.getAndIncrement();
-        if (_i < 30) {
-            session.send("Hello, " + _i);
+        //
+        if (_idx.get() < 30) {
+            session.send("Hello, " + _idx.getAndIncrement());
         }
     }
 
     @Override
     public void onExceptionCaught(Throwable e, INioSession session) throws IOException {
         _LOG.error(session + "--->" + StringUtils.trimToEmpty(e.getMessage()), e);
+    }
+
+    public static void main(String[] args) throws Exception {
+        YMP.get().init();
+        final IClient _client = Servs.get().getClient(NioClient.class);
+        _client.connect();
+        //
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(50000L);
+                    _client.close();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
     }
 }

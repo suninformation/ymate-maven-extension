@@ -4,6 +4,7 @@
 package ${package}.client;
 
 import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.IClient;
 import net.ymate.platform.serv.Servs;
 import net.ymate.platform.serv.annotation.Client;
@@ -23,17 +24,20 @@ import java.net.InetSocketAddress;
 @Client(implClass = NioUdpClient.class, codec = TextLineCodec.class)
 public class UdpClient extends NioUdpListener {
 
-    private final Logger _LOG = LoggerFactory.getLogger(UdpClient.class);
+    private final static Logger _LOG = LoggerFactory.getLogger(UdpClient.class);
 
+    @Override
     public Object onSessionReady() throws IOException {
         return "Hi, UdpServer!";
     }
 
+    @Override
     public Object onMessageReceived(InetSocketAddress sourceAddr, Object message) throws IOException {
         _LOG.info(sourceAddr + "--->" + message);
         return null;
     }
 
+    @Override
     public void onExceptionCaught(InetSocketAddress sourceAddr, Throwable e) throws IOException {
         _LOG.info(sourceAddr + "--->" + StringUtils.trimToEmpty(e.getMessage()), e);
     }
@@ -45,17 +49,18 @@ public class UdpClient extends NioUdpListener {
      */
     public static void main(String[] args) throws Exception {
         YMP.get().init();
-        Servs.get().startup();
-//        Servs.get().getClient(UdpClient.class).connect();
+        final IClient _client = Servs.get().getClient(UdpClient.class);
+        _client.connect();
         //
         try {
             new Thread(new Runnable() {
+                @Override
                 public void run() {
                     try {
-                        Thread.sleep(15000);
-                        IClient _client = Servs.get().getClient(UdpClient.class);
+                        Thread.sleep(50000L);
                         if (_client.isConnected()) {
                             _client.send("quit");
+                            _client.close();
                         }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -63,7 +68,7 @@ public class UdpClient extends NioUdpListener {
                 }
             }).start();
         } catch (Throwable e) {
-            e.printStackTrace();
+            _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             YMP.get().destroy();
         }
     }

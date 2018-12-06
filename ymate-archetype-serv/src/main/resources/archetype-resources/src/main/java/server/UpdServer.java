@@ -5,7 +5,7 @@ package ${package}.server;
 
 import net.ymate.platform.core.YMP;
 import net.ymate.platform.core.module.IModule;
-import net.ymate.platform.serv.IServer;
+import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.serv.Servs;
 import net.ymate.platform.serv.annotation.Server;
 import net.ymate.platform.serv.nio.codec.TextLineCodec;
@@ -23,12 +23,14 @@ import java.net.InetSocketAddress;
 @Server(implClass = NioUdpServer.class, codec = TextLineCodec.class)
 public class UpdServer extends NioUdpListener {
 
-    private final Logger _LOG = LoggerFactory.getLogger(UpdServer.class);
+    private final static Logger _LOG = LoggerFactory.getLogger(UpdServer.class);
 
+    @Override
     public Object onSessionReady() throws IOException {
         return null;
     }
 
+    @Override
     public Object onMessageReceived(InetSocketAddress sourceAddr, Object message) throws IOException {
         _LOG.info(sourceAddr + "--->" + message);
         if ("quit".equalsIgnoreCase(message.toString())) {
@@ -37,13 +39,14 @@ public class UpdServer extends NioUdpListener {
                 // Or
                 // YMP.get().destroy();
             } catch (Exception e) {
-                e.printStackTrace();
+                _LOG.warn("", RuntimeUtils.unwrapThrow(e));
             }
             return null;
         }
-        return message;
+        return "Hi, from server.";
     }
 
+    @Override
     public void onExceptionCaught(InetSocketAddress sourceAddr, Throwable e) throws IOException {
         _LOG.info(sourceAddr + "--->" + e);
     }
@@ -55,7 +58,6 @@ public class UpdServer extends NioUdpListener {
      */
     public static void main(String[] args) throws Exception {
         YMP.get().init();
-        IServer _server = Servs.get().getServer(UpdServer.class);
-        _server.start();
+        Servs.get().getServer(UpdServer.class).start();
     }
 }
