@@ -131,7 +131,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                     throw new DataVersionMismatchException("Data version mismatch. last: " + lastModifyTime + ", current: " + _current);
                 }
             }
-            </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target);
+            </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target, true);
             ${api.model} _entity = _state.bind().bind()
                     <#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else>
                     .${p.name}(<#if formbean>${api.name}Form.get${p.name?cap_first}()<#else>${p.name}</#if>)
