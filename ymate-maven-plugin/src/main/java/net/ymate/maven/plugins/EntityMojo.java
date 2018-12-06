@@ -38,13 +38,24 @@ public class EntityMojo extends AbstractTmplMojo {
     @Parameter(property = "markdown")
     private boolean markdown;
 
+    @Parameter(property = "csv")
+    private boolean csv;
+
+    @Parameter(property = "onlyShow")
+    private boolean onlyShow;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         YMP _owner = null;
         try {
             _owner = new YMP(__doCreateConfigBuilder().param("jdbc.output_path", new File(basedir, "/src/main/java").getPath()).build()).init();
             EntityGenerator _generator = new EntityGenerator(_owner);
+            if (onlyShow) {
+                _generator.onlyShow();
+            }
             if (markdown) {
                 _generator.markdown();
+            } else if (csv) {
+                _generator.csv();
             }
             _generator.createEntityClassFiles(view);
         } catch (Exception e) {
