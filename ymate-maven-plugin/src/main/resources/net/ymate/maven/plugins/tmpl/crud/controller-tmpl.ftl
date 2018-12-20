@@ -3,7 +3,7 @@ package ${app.packageName}.controller;
 
 <#if withDoc>import net.ymate.apidocs.annotation.*;</#if>
 import net.ymate.framework.validation.*;
-import net.ymate.framework.webmvc.WebResult;<#if security?? && security.enabled>
+import net.ymate.platform.webmvc.util.WebResult;<#if security?? && security.enabled>
 import net.ymate.module.security.annotation.Permission;
 import net.ymate.module.security.annotation.RoleType;
 import net.ymate.module.security.annotation.Security;</#if>
@@ -103,7 +103,7 @@ public class ${api.name?cap_first}Controller {
 
     IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean>${api.name}Form, null, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>null, null</#if>, page, pageSize);
     //
-    return WebResult.SUCCESS().data(_result).toJSON();
+    return WebResult.succeed().data(_result).toJSON();
     }
 
 <#if !query><#if upload>
@@ -150,7 +150,7 @@ public class ${api.name?cap_first}Controller {
                           @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if>) throws Exception {
 
         __repository.create(<#if formbean>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if>);
-        return WebResult.SUCCESS().toJSON();
+        return WebResult.succeed().toJSON();
     }
 
     /**
@@ -171,7 +171,7 @@ public class ${api.name?cap_first}Controller {
                           @VLength(max = ${api.primary.validation.max})</#if><#if api.primary.label?? && (api.primary.label?length > 0)>
                           @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first} ${api.primary.name}) throws Exception {
 
-        return WebResult.SUCCESS().data(__repository.find(${api.primary.name})).toJSON();
+        return WebResult.succeed().data(__repository.find(${api.primary.name})).toJSON();
     }
 
     <#if !api.updateDisabled>/**
@@ -220,7 +220,7 @@ public class ${api.name?cap_first}Controller {
                           @VField(label = "记录最后修改时间")@RequestParam long lastModifyTime</#if>) throws Exception {
 
         __repository.update(${api.primary.name}, <#if formbean>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if><#if api.timestamp>, lastModifyTime</#if>);
-        return WebResult.SUCCESS().toJSON();
+        return WebResult.succeed().toJSON();
     }</#if></#if>
 
     /**
@@ -238,7 +238,7 @@ public class ${api.name?cap_first}Controller {
                           @VField(label = "${api.primary.label}")</#if></#if> @RequestParam ${api.primary.type?cap_first}[] ${api.primary.name}) throws Exception {
 
         __repository.remove(${api.primary.name});
-        return WebResult.SUCCESS().toJSON();
+        return WebResult.succeed().toJSON();
     }
 
     <#if api.status?? && (api.status?size > 0 && !api.updateDisabled)><#list api.status as p><#if p.enabled>
@@ -259,7 +259,7 @@ public class ${api.name?cap_first}Controller {
                          @VField(label = "${api.primary.label}")</#if> @RequestParam ${api.primary.type?cap_first}[] ${api.primary.name},<#if p.reason> @VRequired</#if> <#if withDoc>@ApiParam("原因说明，阐述本次操作的原因") </#if>@RequestParam String reason) throws Exception {
 
         __repository.update(${api.primary.name}, ${api.model}.FIELDS.${p.column?upper_case}, <#if (p.type?lower_case == 'string')>"${p.value}"<#else>${p.value}</#if>);
-        return WebResult.SUCCESS().toJSON();
+        return WebResult.succeed().toJSON();
     }
     </#if></#list></#if>
 </#if>

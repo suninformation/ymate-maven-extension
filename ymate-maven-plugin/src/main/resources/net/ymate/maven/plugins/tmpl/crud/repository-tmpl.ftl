@@ -2,7 +2,7 @@ package ${app.packageName}.repository.impl;
 
 <#if query>import ${app.packageName}.config.${app.name?cap_first}RepositoryConfig;</#if>
 import ${app.packageName}.repository.I${api.name?cap_first}Repository;
-import net.ymate.framework.exception.DataVersionMismatchException;<#if query>
+import net.ymate.platform.webmvc.exception.DataVersionMismatchException;<#if query>
 import net.ymate.platform.configuration.IConfiguration;</#if>
 import net.ymate.platform.core.beans.annotation.Inject;
 import net.ymate.platform.core.beans.support.PropertyStateSupport;
@@ -126,10 +126,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         ${api.model} _target = ${api.model}.builder().id(${api.primary.name}).build().load(IDBLocker.DEFAULT);
         if (_target != null) {
             <#if api.timestamp>if (lastModifyTime > 0) {
-                long _current = BlurObject.bind(_target.getLastModifyTime()).toLongValue();
-                if (_current != lastModifyTime) {
-                    throw new DataVersionMismatchException("Data version mismatch. last: " + lastModifyTime + ", current: " + _current);
-                }
+                DataVersionMismatchException.comparisonVersion(lastModifyTime, _target.getLastModifyTime());
             }
             </#if>PropertyStateSupport<${api.model}> _state = PropertyStateSupport.create(_target, true);
             ${api.model} _entity = _state.bind().bind()

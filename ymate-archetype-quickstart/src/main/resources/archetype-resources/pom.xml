@@ -152,6 +152,11 @@
         -->
         <!--
         <dependency>
+            <groupId>net.ymate.platform</groupId>
+            <artifactId>ymate-platform-webmvc</artifactId>
+            <version>${ymate.platform.version}</version>
+        </dependency>
+        <dependency>
             <groupId>net.ymate.framework</groupId>
             <artifactId>ymate-framework-commons</artifactId>
             <version>${ymate.framework.version}</version>
