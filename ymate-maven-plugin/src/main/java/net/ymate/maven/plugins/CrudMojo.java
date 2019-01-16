@@ -81,7 +81,7 @@ public class CrudMojo extends AbstractTmplMojo {
                     getLog().info("CRUD has been locked.");
                 } else {
                     Map<String, Object> _sqlMap = new HashMap<String, Object>();
-                    //
+                    Map<String, String> _navMap = new HashMap<String, String>();
                     for (ApiInfo _api : _application.getApis()) {
                         boolean _matched = true;
                         if (!ArrayUtils.isEmpty(filter) && !ArrayUtils.contains(filter, _api.getName())) {
@@ -91,42 +91,92 @@ public class CrudMojo extends AbstractTmplMojo {
                         if (_matched) {
                             _api.checkDefaultValue();
                             //
-                            boolean _isQuery = StringUtils.equalsIgnoreCase(_api.getModel(), "query");
-                            //
-                            Map<String, Object> _props = new HashMap<String, Object>();
-                            _props.put("app", _application.toMap());
-                            _props.put("api", _api.toMap());
-                            _props.put("security", _application.getSecurity().toMap());
-                            _props.put("intercept", _application.getIntercept());
-                            _props.put("query", _isQuery);
-                            _props.put("upload", _api.isUpload());
-                            //
-                            _props.put("formbean", formBean && !_api.getParams().isEmpty());
-                            _props.put("withDoc", withDoc);
-                            //
-                            if (_isQuery) {
-                                _sqlMap.put(_api.getName(), _api.getQuery());
+                            if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "view")) {
+                                Map<String, Object> _props = new HashMap<String, Object>();
+                                //
+                                List<String> _columnKeys = new ArrayList<String>();
+                                List<CrudColumnInfo> _columns = new ArrayList<CrudColumnInfo>();
+                                _columns.add(new CrudColumnInfo(_api.getPrimary().getName(), StringUtils.defaultIfBlank(_api.getPrimary().getLabel(), _api.getPrimary().getDescription()), _api.getPrimary().getType()));
+                                for (ApiParameter _param : _api.getParams()) {
+                                    CrudColumnInfo _column = new CrudColumnInfo(_param.getName(), StringUtils.defaultIfBlank(_param.getLabel(), _param.getDescription()), _param.getType());
+                                    _column.setContent(_param.getDefaultValue());
+                                    _column.setFilter(_param.getFilter().isEnabled());
+                                    _column.setRegion(_param.getFilter().isRegion());
+                                    _column.setRequired(_param.isRequired());
+                                    _columns.add(_column);
+                                    //
+                                    _columnKeys.add(_param.getName());
+                                }
+                                _props.put("_columns", _columns);
+                                _props.put("_columnKeys", _columnKeys);
+                                _props.put("_name", _api.getName());
+                                _props.put("_description", _api.getDescription());
+                                _props.put("_mapping", _api.getMapping());
+                                //
+                                String _mapping = _api.getMapping().charAt(0) == '/' ? _api.getMapping().substring(1) : _api.getMapping();
+                                String[] _mappingArr = StringUtils.split(_mapping, "/");
+                                String _viewFilePath;
+                                String _viewFileName;
+                                String _pagePath;
+                                if (_mappingArr.length == 1) {
+                                    _viewFileName = _mappingArr[0];
+                                    _viewFilePath = "";
+                                    _pagePath = "";
+                                } else {
+                                    _viewFilePath = StringUtils.join(_mappingArr, '/', 0, _mappingArr.length - 1);
+                                    _viewFileName = _mappingArr[_mappingArr.length - 1];
+                                    _pagePath = StringUtils.repeat("../", _mappingArr.length - 1);
+                                }
+                                _props.put("_pagePath", _pagePath);
+                                _navMap.put(_mapping, StringUtils.defaultIfBlank(_api.getDescription(), _api.getName()));
+                                __doWriteSingleFile(_application.buildResourceFilePath("templates/" + (StringUtils.isBlank(_viewFilePath) ? "" : _viewFilePath + "/") + _viewFileName + ".jsp"), "crud/crud-view-tmpl", _props);
+                                //
                             }
-                            if (_api.isLocked()) {
-                                getLog().info("API " + _api.getName() + " has been locked.");
-                            } else {
-                                String _apiName = StringUtils.capitalize(_api.getName());
+                            //
+                            if (StringUtils.isBlank(action) || !StringUtils.equalsIgnoreCase(action, "view")) {
+                                boolean _isQuery = StringUtils.equalsIgnoreCase(_api.getModel(), "query");
                                 //
-                                if (formBean && !_api.getParams().isEmpty()) {
-                                    __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "FormBean.java"), "crud/formbean-tmpl", _props);
-                                    __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "UpdateFormBean.java"), "crud/formbean-update-tmpl", _props);
-                                }
+                                Map<String, Object> _props = new HashMap<String, Object>();
+                                _props.put("app", _application.toMap());
+                                _props.put("api", _api.toMap());
+                                _props.put("security", _application.getSecurity().toMap());
+                                _props.put("intercept", _application.getIntercept());
+                                _props.put("query", _isQuery);
+                                _props.put("upload", _api.isUpload());
                                 //
-                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
-                                    __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
+                                _props.put("formbean", formBean && !_api.getParams().isEmpty());
+                                _props.put("withDoc", withDoc);
+                                //
+                                if (_isQuery) {
+                                    _sqlMap.put(_api.getName(), _api.getQuery());
                                 }
-                                if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
-                                    __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
-                                    __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
+                                if (_api.isLocked()) {
+                                    getLog().info("API " + _api.getName() + " has been locked.");
+                                } else {
+                                    String _apiName = StringUtils.capitalize(_api.getName());
+                                    //
+                                    if (formBean && !_api.getParams().isEmpty()) {
+                                        __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "FormBean.java"), "crud/formbean-tmpl", _props);
+                                        __doWriteSingleFile(_application.buildJavaFilePath("dto/" + _apiName + "UpdateFormBean.java"), "crud/formbean-update-tmpl", _props);
+                                    }
+                                    //
+                                    if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "controller")) {
+                                        __doWriteSingleFile(_application.buildJavaFilePath("controller/" + _apiName + "Controller.java"), "crud/controller-tmpl", _props);
+                                    }
+                                    if (StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) {
+                                        __doWriteSingleFile(_application.buildJavaFilePath("repository/impl/" + _apiName + "Repository.java"), "crud/repository-tmpl", _props);
+                                        __doWriteSingleFile(_application.buildJavaFilePath("repository/I" + _apiName + "Repository.java"), "crud/repository-interface-tmpl", _props);
+                                    }
                                 }
                             }
                         }
                     }
+                    if (StringUtils.equalsIgnoreCase(action, "view") && !_navMap.isEmpty()) {
+                        Map<String, Object> _props = new HashMap<String, Object>();
+                        _props.put("_navMap", _navMap);
+                        __doWriteSingleFile(_application.buildResourceFilePath("templates/_base_crud_view.jsp"), "crud/crud-base-view-tmpl", _props);
+                    }
+                    //
                     if ((StringUtils.isBlank(action) || StringUtils.equalsIgnoreCase(action, "repository")) && !_sqlMap.isEmpty()) {
                         Map<String, Object> _props = new HashMap<String, Object>();
                         _props.put("app", _application.toMap());
@@ -1106,6 +1156,85 @@ public class CrudMojo extends AbstractTmplMojo {
 
         public Map<String, Object> toMap() {
             return ClassUtils.wrapper(this).toMap();
+        }
+    }
+
+    public static class CrudColumnInfo {
+
+        private String data;
+
+        private String title;
+
+        private String type;
+
+        private String content;
+
+        private boolean filter;
+
+        private boolean required;
+
+        private boolean region;
+
+        public CrudColumnInfo(String data, String title, String type) {
+            this.data = data;
+            this.title = title;
+            this.type = type;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        public void setData(String data) {
+            this.data = data;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
+        public boolean isFilter() {
+            return filter;
+        }
+
+        public void setFilter(boolean filter) {
+            this.filter = filter;
+        }
+
+        public boolean isRequired() {
+            return required;
+        }
+
+        public void setRequired(boolean required) {
+            this.required = required;
+        }
+
+        public boolean isRegion() {
+            return region;
+        }
+
+        public void setRegion(boolean region) {
+            this.region = region;
         }
     }
 }

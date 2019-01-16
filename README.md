@@ -1007,14 +1007,14 @@
 
 ##### 2.1.13 `crud`：CRUD代码生成器
 
-> 通过规则配置文件自动生成控制器（`Controller`）、存储器（`Repository`）等类代码，包括拦截器、参数验证、权限控制、文件上传、组件条件查询等；
+> 通过规则配置文件自动生成控制器（`Controller`）、存储器（`Repository`）和页面视图(`View`)等代码，包括拦截器、参数验证、权限控制、文件上传、组件条件查询等；
 
 - 参数列表：
 
     |参数名称|必须|说明|
     |---|---|---|
     |file|否|CRUD规则配置文件，默认值：`misc/crud.json`|
-    |action|否|指定本次生成哪些代码，默认值：`全部`，取值范围：`controller`，`repository`|
+    |action|否|指定本次生成哪些代码，默认值：`全部`，取值范围：`controller`，`repository`，`view`|
     |filter|否|指定本次仅生成列表中API或表的代码，默认值：`空`，多个名称之间用`,`分隔|
     |fromDb|否|是否通过数据库表结构生成规则配置文件，默认值：`false`|
     |formBean|否|是否将请求参数封装成JavaBean，默认值：`false`|
