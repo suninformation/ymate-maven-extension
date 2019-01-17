@@ -182,7 +182,7 @@
                             content: '确认要删除选中的 ' + _len + " 条记录吗？",
                             ok: function () {
                                 $.requestSender({
-                                    url: '${_mapping}/remove',
+                                    url: '${_pagePath}${_mapping}/remove',
                                     type: 'POST',
                                     timeout: 0,
                                     data: {
@@ -205,7 +205,7 @@
                 function __doDetail(param, callback) {
                     __overlayShow();
                     $.requestSender({
-                        url: '${_mapping}/detail',
+                        url: '${_pagePath}${_mapping}/detail',
                         type: 'get',
                         timeout: 0,
                         data: {
@@ -255,7 +255,6 @@
                             </#list>
                             ]
                         }));
-                        $(window).trigger('resize');
                         __tabSwitcher.show('_tabDetail');
                     });
                 };
@@ -276,7 +275,7 @@
                             __confirmShow({
                                 ok: function () {
                                     $.requestSender({
-                                        url: '${_mapping}/status/' + (_item.status === 2 ? 'enable' : 'disable'),
+                                        url: '${_pagePath}${_mapping}/status/' + (_item.status === 2 ? 'enable' : 'disable'),
                                         type: 'POST',
                                         timeout: 0,
                                         data: {
@@ -316,7 +315,7 @@
             <h1>${_name}<small>${_description}</small></h1>
         </section>
         <section class="content">
-            <bs:form _id="_formSearch" action="${_mapping}/query" method="GET">
+            <bs:form _id="_formSearch" action="${_pagePath}${_mapping}/query" method="GET">
                 <div class="box">
                     <div class="box-header with-border">
                         <h3 class="box-title">查询条件</h3>
@@ -398,7 +397,7 @@
                 </ul>
                 <div class="tab-content">
                     <div id="_tabCreate" class="tab-pane">
-                        <form action="${_mapping}/create" method="POST">
+                        <form action="${_pagePath}${_mapping}/create" method="POST">
                             <div class="box box-widget">
                                 <div class="box-header with-border">
                                     <h3 class="box-title">添加<#if _description?? && (_description?length > 0)>${_description}<#else>${_name}</#if></h3>
@@ -463,7 +462,7 @@
                         </form>
                     </div>
                     <div id="_tabUpdate" class="tab-pane">
-                        <form action="${_mapping}/update" method="POST">
+                        <form action="${_pagePath}${_mapping}/update" method="POST">
                             <div class="box box-widget">
                                 <div class="box-header with-border">
                                     <h3 class="box-title">修改<#if _description?? && (_description?length > 0)>${_description}<#else>${_name}</#if></h3>

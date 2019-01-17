@@ -111,7 +111,6 @@ public class CrudMojo extends AbstractTmplMojo {
                                 _props.put("_columnKeys", _columnKeys);
                                 _props.put("_name", _api.getName());
                                 _props.put("_description", _api.getDescription());
-                                _props.put("_mapping", _api.getMapping());
                                 //
                                 String _mapping = _api.getMapping().charAt(0) == '/' ? _api.getMapping().substring(1) : _api.getMapping();
                                 String[] _mappingArr = StringUtils.split(_mapping, "/");
@@ -128,6 +127,7 @@ public class CrudMojo extends AbstractTmplMojo {
                                     _pagePath = StringUtils.repeat("../", _mappingArr.length - 1);
                                 }
                                 _props.put("_pagePath", _pagePath);
+                                _props.put("_mapping", _mapping);
                                 _navMap.put(_mapping, StringUtils.defaultIfBlank(_api.getDescription(), _api.getName()));
                                 __doWriteSingleFile(_application.buildResourceFilePath("templates/" + (StringUtils.isBlank(_viewFilePath) ? "" : _viewFilePath + "/") + _viewFileName + ".jsp"), "crud/crud-view-tmpl", _props);
                                 //
