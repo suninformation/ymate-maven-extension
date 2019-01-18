@@ -102,6 +102,7 @@
                     "</ul>");
 
                 $('.sidebar').navigation({
+                    searchable: true,
                     items: [
                         {type: 'header', title: 'MAIN NAVIGATION'},
                         <#list _navMap?keys as key>

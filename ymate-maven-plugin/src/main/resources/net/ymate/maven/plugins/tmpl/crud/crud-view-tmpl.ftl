@@ -32,7 +32,7 @@
                         },
                         <#elseif (p.data == 'createTime' || p.data == 'lastModifyTime')>
                         render: function (data, type, row, meta) {
-                            return data ? DateUtils.utcToString(data, 'yyyy-MM-dd hh:mm:ss') : '';
+                            return data ? moment(data).format('YYYY-MM-DD HH:mm:ss') : '';
                         },
                         </#if>
                     },
@@ -246,7 +246,7 @@
                             items: [
                             <#list _columns as p>
                                 <#if (p.data == 'createTime' || p.data == 'lastModifyTime')>
-                                { title: '${p.title}', content: DateUtils.utcToString(result.data.${p.data}, 'yyyy-MM-dd hh:mm:ss')},
+                                { title: '${p.title}', content: result.data.${p.data} ? moment(result.data.${p.data}).format('YYYY-MM-DD HH:mm:ss') : ''},
                                 <#elseif (p.type == 'integer' && p.data?starts_with('is'))>
                                 { title: '${p.title}', content: __dict._logical[p.data] ? __dict._logical[p.data] : p.data},
                                 <#else>
