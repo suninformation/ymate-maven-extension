@@ -103,6 +103,7 @@
 
                 $('.sidebar').navigation({
                     searchable: true,
+                    activeItem: '@{page.activeItem}',
                     items: [
                         {type: 'header', title: 'MAIN NAVIGATION'},
                         <#list _navMap?keys as key>

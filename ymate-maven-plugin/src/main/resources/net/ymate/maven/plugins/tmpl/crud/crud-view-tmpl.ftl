@@ -7,6 +7,7 @@
 <ymweb:ui src="_base_crud_view">
     <ymweb:property name="title"><#if _description?? && (_description?length > 0)>${_description}<#else>${_name}</#if></ymweb:property>
     <#if (_pagePath?length > 0)><ymweb:property name="page.path">${_pagePath}</ymweb:property></#if>
+    <ymweb:property name="page.activeItem">${_pagePath}${_mapping}</ymweb:property>
     <ymweb:property name="page.scripts">
         <script type="text/javascript">
             $(document).ready(function () {
