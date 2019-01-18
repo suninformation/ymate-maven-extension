@@ -248,7 +248,11 @@
                                 <#if (p.data == 'createTime' || p.data == 'lastModifyTime')>
                                 { title: '${p.title}', content: result.data.${p.data} ? moment(result.data.${p.data}).format('YYYY-MM-DD HH:mm:ss') : ''},
                                 <#elseif (p.type == 'integer' && p.data?starts_with('is'))>
-                                { title: '${p.title}', content: __dict._logical[p.data] ? __dict._logical[p.data] : p.data},
+                                { title: '${p.title}', content: __dict._logical[result.data.${p.data}] ? __dict._logical[result.data.${p.data}] : result.data.${p.data}},
+                                <#elseif (p.type == 'integer' && p.data == 'type')>
+                                { title: '${p.title}', content: __dict.type[result.data.${p.data}] ? __dict.type[result.data.${p.data}] : result.data.${p.data}},
+                                <#elseif (p.type == 'integer' && p.data == 'status')>
+                                { title: '${p.title}', content: __dict.status[result.data.${p.data}] ? __dict.status[result.data.${p.data}] : result.data.${p.data}},
                                 <#else>
                                 { title: '${p.title}', content: result.data.${p.data}},
                                 </#if>
