@@ -280,7 +280,7 @@
                             __confirmShow({
                                 ok: function () {
                                     $.requestSender({
-                                        url: '${_pagePath}${_mapping}/status/' + (_item.status === 2 ? 'enable' : 'disable'),
+                                        url: '${_pagePath}${_mapping}/status/' + (_item.status === 1 ? 'enable' : 'disable'),
                                         type: 'POST',
                                         timeout: 0,
                                         data: {
