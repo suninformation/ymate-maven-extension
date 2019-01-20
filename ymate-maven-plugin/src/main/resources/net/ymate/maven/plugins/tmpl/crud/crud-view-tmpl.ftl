@@ -32,6 +32,7 @@
                             return __dict.status[data] ? __dict.status[data] : data;
                         },
                         <#elseif (p.data == 'createTime' || p.data == 'lastModifyTime')>
+                        width: '150px',
                         render: function (data, type, row, meta) {
                             return data ? moment(data).format('YYYY-MM-DD HH:mm:ss') : '';
                         },

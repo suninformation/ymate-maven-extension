@@ -44,6 +44,7 @@
             .form-control-static {
                 background: #f6f6f6;
                 padding: 10px;
+                overflow-x: scroll;
             }
             .control-sidebar.control-sidebar-open,
             .control-sidebar.control-sidebar-open+.control-sidebar-bg {
