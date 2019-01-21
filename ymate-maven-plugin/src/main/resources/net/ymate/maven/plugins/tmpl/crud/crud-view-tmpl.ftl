@@ -243,7 +243,7 @@
 
                 window.__onDetail = function(param) {
                     __doDetail(param, function (result) {
-                        var _tmpl = '{% for (var i = 0; i < o.items.length; i++) { %}<div class=" form-group"><label class="control-label">{%=o.items[i].title%}</label><p class=" form-control-static">{%=o.items[i].content%}</p></div>{% } %}';
+                        var _tmpl = '{% for (var i = 0; i < o.items.length; i++) { %}<div class=" form-group"><label class="control-label">{%=o.items[i].title%}</label><{% if (o.items[i].tag) { %}{%=o.items[i].tag%}{% } else { %}p{% }%} class=" form-control-static">{%=o.items[i].content%}</{% if (o.items[i].tag) { %}{%=o.items[i].tag%}{% } else { %}p{% }%}></div>{% } %}';
                         $('#_tabDetail .box-body').html(tmpl(_tmpl, {
                             items: [
                             <#list _columns as p>
