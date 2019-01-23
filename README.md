@@ -1018,6 +1018,7 @@
     |filter|否|指定本次仅生成列表中API或表的代码，默认值：`空`，多个名称之间用`,`分隔|
     |fromDb|否|是否通过数据库表结构生成规则配置文件，默认值：`false`|
     |formBean|否|是否将请求参数封装成JavaBean，默认值：`false`|
+    |repositoryWithoutFormBean|否|是否禁止存储器使用JavaBean封装参数，默认值：`false`|
     |withDoc|否|是否生成API文档注解，默认值：`false`|
     |mapping|否|指定生成的控制器基准`RequestMapping`路径，默认值：`空`|
 

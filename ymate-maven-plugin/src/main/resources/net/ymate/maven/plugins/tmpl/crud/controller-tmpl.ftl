@@ -101,7 +101,7 @@ public class ${api.name?cap_first}Controller {
 
                          @RequestParam int page, @RequestParam int pageSize) throws Exception {
 
-    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean>${api.name}Form, null, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>null, null</#if>, page, pageSize);
+    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, null, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>null, null</#if>, page, pageSize);
     //
     return WebResult.succeed().data(_result).toJSON();
     }
@@ -149,7 +149,7 @@ public class ${api.name?cap_first}Controller {
                           @VLength(max = ${p.validation.max})</#if></#if><#if p.label?? && (p.label?length > 0)>
                           @VField(label = "${p.label}")</#if></#if> @RequestParam<#if !p.required && !p.upload.enabled><#if p.defaultValue?? && (p.defaultValue?length > 0)>(defaultValue = "${p.defaultValue}")</#if></#if> <#if p.upload.enabled>IUploadFileWrapper<#else>${p.type?cap_first}</#if> ${p.name}</#if></#list></#if>) throws Exception {
 
-        __repository.create(<#if formbean>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if>);
+        __repository.create(<#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${api.name}Form.get${p.name?cap_first}())<#else>${api.name}Form.get${p.name?cap_first}()</#if></#if></#list></#if><#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if>);
         return WebResult.succeed().toJSON();
     }
 
@@ -219,7 +219,7 @@ public class ${api.name?cap_first}Controller {
                           @VLength(max = 13)
                           @VField(label = "记录最后修改时间")@RequestParam long lastModifyTime</#if>) throws Exception {
 
-        __repository.update(${api.primary.name}, <#if formbean>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if><#if api.timestamp>, lastModifyTime</#if>);
+        __repository.update(${api.primary.name}, <#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${api.name}Form.get${p.name?cap_first}())<#else>${api.name}Form.get${p.name?cap_first}()</#if></#if></#list></#if><#else><#list api.params as p><#if api.timestamp && (p.name == 'createTime' || p.name == 'lastModifyTime')><#else><#if (p_index > 0)>, </#if><#if p.upload.enabled>__transferUploadFile(${p.name})<#else>${p.name}</#if></#if></#list></#if><#if api.timestamp>, lastModifyTime</#if>);
         return WebResult.succeed().toJSON();
     }</#if></#if>
 

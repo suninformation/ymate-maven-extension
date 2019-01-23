@@ -64,6 +64,9 @@ public class CrudMojo extends AbstractTmplMojo {
     @Parameter(property = "formBean")
     private boolean formBean;
 
+    @Parameter(property = "repositoryWithoutFormBean")
+    private boolean repositoryWithoutFormBean;
+
     @Parameter(property = "withDoc")
     private boolean withDoc;
 
@@ -144,7 +147,9 @@ public class CrudMojo extends AbstractTmplMojo {
                                 _props.put("query", _isQuery);
                                 _props.put("upload", _api.isUpload());
                                 //
-                                _props.put("formbean", formBean && !_api.getParams().isEmpty());
+                                boolean _isFormBean = formBean && !_api.getParams().isEmpty();
+                                _props.put("formbean", _isFormBean);
+                                _props.put("repositoryFormBean", _isFormBean && !repositoryWithoutFormBean);
                                 _props.put("withDoc", withDoc);
                                 //
                                 if (_isQuery) {
