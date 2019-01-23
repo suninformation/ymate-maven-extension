@@ -3,6 +3,7 @@ package ${app.packageName}.controller;
 
 <#if withDoc>import net.ymate.apidocs.annotation.*;</#if>
 import net.ymate.framework.validation.*;
+import net.ymate.platform.persistence.Fields;
 import net.ymate.platform.webmvc.util.WebResult;<#if security?? && security.enabled>
 import net.ymate.module.security.annotation.Permission;
 import net.ymate.module.security.annotation.RoleType;
@@ -101,7 +102,12 @@ public class ${api.name?cap_first}Controller {
 
                          @RequestParam int page, @RequestParam int pageSize) throws Exception {
 
-    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, null, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>null, null</#if>, page, pageSize);
+    Fields _fields = Fields.create(
+        <#list api.params as p>
+            ${api.model}.FIELDS.${p.column?upper_case}<#if p_has_next>,</#if>
+        </#list>
+    );
+    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, _fields, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>_fields, null</#if>, page, pageSize);
     //
     return WebResult.succeed().data(_result).toJSON();
     }
