@@ -102,7 +102,7 @@ public class ${api.name?cap_first}Controller {
 
                          @RequestParam int page, @RequestParam int pageSize) throws Exception {
 
-    Fields _fields = Fields.create(
+    Fields _fields = Fields.create(${api.model}.FIELDS.${api.primary.column?upper_case},
         <#list api.params as p>
             ${api.model}.FIELDS.${p.column?upper_case}<#if p_has_next>,</#if>
         </#list>
