@@ -1,6 +1,7 @@
 <#setting number_format="#">
 package ${app.packageName}.dto;
 
+<#if withDoc>import net.ymate.apidocs.annotation.*;</#if>
 import net.ymate.framework.validation.*;
 import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.validation.annotation.*;
