@@ -255,14 +255,21 @@ public class CrudMojo extends AbstractTmplMojo {
                             if (_primaryColumn != null) {
                                 _info.setPrimary(new ApiParameter(_primaryColumn));
                                 //
+                                List<StatusInfo> _status = new ArrayList<StatusInfo>();
                                 List<ApiParameter> _params = new ArrayList<ApiParameter>();
                                 for (ColumnInfo _column : _tableInfo.getFieldMap().values()) {
                                     if (!_column.isPrimaryKey()) {
-                                        _params.add(new ApiParameter(_column));
+                                        ApiParameter _parameter = new ApiParameter(_column);
+                                        _params.add(_parameter);
+                                        //
+                                        if (StringUtils.equalsIgnoreCase(_column.getColumnName(), "status")) {
+                                            _status.add(new StatusInfo("enabled", _parameter.getColumn(), _parameter.getType(), "0", false, "Set the status value to enabled."));
+                                            _status.add(new StatusInfo("disabled", _parameter.getColumn(), _parameter.getType(), "1", true, "Set the status value to disable."));
+                                        }
                                     }
                                 }
                                 _info.setParams(_params);
-                                _info.setStatus(Collections.<StatusInfo>emptyList());
+                                _info.setStatus(_status);
                                 //
                                 if (_apisSB.length() > 0) {
                                     _apisSB.append(",\r\n\t\t");
@@ -615,6 +622,19 @@ public class CrudMojo extends AbstractTmplMojo {
         private boolean reason;
 
         private String description;
+
+        public StatusInfo(String name, String column, String type, String value, boolean reason, String description) {
+            this.enabled = true;
+            this.name = name;
+            this.column = column;
+            this.type = type;
+            this.value = value;
+            this.reason = reason;
+            this.description = description;
+        }
+
+        public StatusInfo() {
+        }
 
         public void checkDefaultValue() {
             if (this.enabled) {

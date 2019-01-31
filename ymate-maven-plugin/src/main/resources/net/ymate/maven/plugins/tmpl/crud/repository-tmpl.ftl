@@ -110,7 +110,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
         return JDBC.get().openSession(new ISessionExecutor<int[]>() {
             @Override
             public int[] execute(ISession session) throws Exception {
-                BatchSQL _batchSQL = BatchSQL.create(Update.create(session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix(), ${api.model}.class)
+                BatchSQL _batchSQL = BatchSQL.create(Update.create(${api.model}.class)
                         .where(Where.create(Cond.create().eq(${api.model}.FIELDS.${api.primary.column?upper_case}))).field(fieldName).field(${api.model}.FIELDS.LAST_MODIFY_TIME).toString());
                 for (String _${api.primary.name} : ${api.primary.name}s) {
                     _batchSQL.addParameter(Params.create(value, System.currentTimeMillis(), _${api.primary.name}));
@@ -205,7 +205,7 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                     _where.orderDesc(${api.model}.FIELDS.<#if api.updateDisabled>CREATE_TIME<#else>LAST_MODIFY_TIME</#if>);</#if>
                 }
                 //
-                return session.find(Select.create(session.getConnectionHolder().getDataSourceCfgMeta().getTablePrefix(), ${api.model}.class)
+                return session.find(Select.create(${api.model}.class)
                             .field(fields == null ? Fields.create() : fields).where(_where).toSQL(), new EntityResultSetHandler<${api.model}>(${api.model}.class), Page.createIfNeed(page, pageSize));
             }
         });
