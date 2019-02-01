@@ -110,7 +110,7 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#if></#list></#if>, </#if>
 
-                         @VNumeric @RequestParam int page, @VNumeric @RequestParam int pageSize) throws Exception {
+                         <#if withDoc>@ApiParam(value = "查询页号") </#if>@VNumeric @RequestParam int page, <#if withDoc>@ApiParam(value = "每页记录数") </#if>@VNumeric @RequestParam int pageSize) throws Exception {
 
     IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, __fields, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>__fields, null</#if>, page, pageSize);
     //
@@ -133,7 +133,7 @@ public class ${api.name?cap_first}Controller {
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping("/export")<#if withDoc>
-    @ApiAction(value = "查询", mapping = "${api.mapping}/export",
+    @ApiAction(value = "导出", mapping = "${api.mapping}/export",
             notes = "注意：若省略条件参数调用导出接口将返回全部数据，存在安全隐患！",
             description = "根据条件查询<#if api.description?? && (api.description?length > 0)>${api.description}</#if>数据并生成下载文件，多个条件参数间采用与操作；", httpMethod = "GET")</#if><#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_EXPORT")<#if withDoc>
@@ -168,7 +168,7 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#if></#list></#if>, </#if>
 
-                         @VNumeric @RequestParam int pageSize) throws Exception {
+                         <#if withDoc>@ApiParam(value = "每页记录数") </#if>@VNumeric @RequestParam int pageSize) throws Exception {
 
         File _result = __repository.export(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, __fields, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>__fields, null</#if>, pageSize);
         if (_result != null) {
