@@ -23,6 +23,11 @@ import net.ymate.platform.persistence.jdbc.repo.annotation.Repository;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.commons.lang.StringUtils;
+import net.ymate.framework.commons.ExcelFileExportHelper;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * ${api.name?cap_first}Repository <#if api.description?? && (api.description?length > 0)>- ${api.description}</#if>
@@ -209,6 +214,23 @@ public class ${api.name?cap_first}Repository implements I${api.name?cap_first}Re
                             .field(fields == null ? Fields.create() : fields).where(_where).toSQL(), new EntityResultSetHandler<${api.model}>(${api.model}.class), Page.createIfNeed(page, pageSize));
             }
         });
+    }
+
+    @Override
+    public File export(<#if api.primary.filter?? && api.primary.filter.enabled>final ${api.primary.type?cap_first} ${api.primary.name}, </#if><#if formbean && repositoryFormBean>final ${app.packageName}.dto.${api.name?cap_first}FormBean ${api.name}Form, <#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled>final ${p.type?cap_first} <#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, final ${p.type?cap_first} end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if></#if>final Fields fields, final OrderBy orderBy, final int pageSize) throws Exception {
+        ExcelFileExportHelper _helper = ExcelFileExportHelper.bind(new ExcelFileExportHelper.IExportDataProcessor() {
+            @Override
+            public Map<String, Object> getData(int index) throws Exception {
+                IResultSet<${api.model}> _result = find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, _fields, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>_fields, null</#if>fields, orderBy, index, pageSize > 0 ? pageSize : 10000);
+                if (_result != null && _result.isResultsAvailable()) {
+                    Map<String, Object> _data = new HashMap<String, Object>();
+                    _data.put("data", _result.getResultData());
+                    return _data;
+                }
+                return null;
+            }
+        });
+        return _helper.export(${api.model}.class);
     }
     </#if>
 }
