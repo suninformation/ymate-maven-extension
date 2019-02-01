@@ -273,6 +273,10 @@
                     __doRemove(param);
                 };
 
+                window.__onExport = function() {
+                    window.open(window.location.href + '/export?' + __searchForm.getForm().serialize());
+                };
+
                 <#if (_columnKeys?seq_contains('status'))>
                 window.__onStatus = function(param) {
                     if (param) {
@@ -373,6 +377,7 @@
                         <div class="btn-group btn-group-sm">
                             <button class="btn btn-default" type="button" data-operations="operations" data-operation-fn="Create"><i class="fa fa-plus"></i></button>
                             <button class="btn btn-default" type="button" data-operations="operations" data-operation-fn="RemoveAll"><i class="fa fa-trash-o"></i></button>
+                            <button class="btn btn-default" type="button" data-operations="operations" data-operation-fn="Export"><i class="fa fa-share-square-o"></i> 导出</button>
                         </div>
                     </div>
                 </div>

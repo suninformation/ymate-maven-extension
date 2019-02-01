@@ -176,7 +176,7 @@ public class CrudMojo extends AbstractTmplMojo {
                             }
                         }
                     }
-                    if (StringUtils.equalsIgnoreCase(action, "view") && !_navMap.isEmpty()) {
+                    if (StringUtils.equalsIgnoreCase(StringUtils.defaultIfBlank(action, "view"), "view") && !_navMap.isEmpty()) {
                         Map<String, Object> _props = new HashMap<String, Object>();
                         _props.put("_navMap", _navMap);
                         __doWriteSingleFile(_application.buildResourceFilePath("templates/_base_crud_view.jsp"), "crud/crud-base-view-tmpl", _props);
