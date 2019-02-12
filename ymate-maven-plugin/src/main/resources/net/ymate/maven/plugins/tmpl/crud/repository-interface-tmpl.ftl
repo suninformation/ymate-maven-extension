@@ -71,7 +71,7 @@ public interface I${api.name?cap_first}Repository {
      * @param fieldName 字段名称
      * @param value     值
      * @return 返回影响的记录数
-     * @throws Exception 能产生的任何异常
+     * @throws Exception 可能产生的任何异常
      */
     int[] update(${api.primary.type?cap_first}[] ${api.primary.name}s, String fieldName, Object value) throws Exception;</#if>
 
