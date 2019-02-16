@@ -89,6 +89,8 @@
                                         __doChangePageQuery();
                                         __sidebarTrigger();
                                         __notifyShow('添加新记录成功！', 'success');
+                                    } else {
+                                        __notifyShow(result.msg, 'error');
                                     }
                                 }
                             },
@@ -109,6 +111,8 @@
                                         __doChangePageQuery(__tables.getCurrentPageNumber());
                                         __sidebarTrigger();
                                         __notifyShow('更新记录成功！', 'success');
+                                    } else {
+                                        __notifyShow(result.msg, 'error');
                                     }
                                 }
                             },
@@ -169,10 +173,15 @@
                         timeout: 0,
                         data: _data,
                         success: function (data, textStatus, jqXHR) {
-                            __tables.refresh(data);
+                            if (data && data.ret === 0) {
+                                __tables.refresh(data);
+                            } else {
+                                __notifyShow(data.msg, 'error');
+                            }
                         },
                         error: function (XMLHttpRequest, textStatus, errorThrown) {
                             console.log(errorThrown);
+                            __notifyShow(errorThrown, 'error');
                         }
                     });
                 }
@@ -191,10 +200,16 @@
                                         id: id
                                     },
                                     success: function (data, textStatus, jqXHR) {
-                                        __doChangePageQuery(__tables.getCurrentPageNumber());
+                                        if (data && data.ret === 0) {
+                                            __notifyShow('操作成功！', 'success');
+                                            __doChangePageQuery(__tables.getCurrentPageNumber());
+                                        } else {
+                                            __notifyShow(data.msg, 'error');
+                                        }
                                     },
                                     error: function (XMLHttpRequest, textStatus, errorThrown) {
                                         console.log(errorThrown);
+                                        __notifyShow(errorThrown, 'error');
                                     }
                                 });
                             }
@@ -218,13 +233,13 @@
                                 callback(data);
                                 __sidebarTrigger();
                             } else {
-                                __notifyShow(data.msg, 'error')
+                                __notifyShow(data.msg, 'error');
                             }
                             __overlayShow(true);
                         },
                         error: function (XMLHttpRequest, textStatus, errorThrown) {
                             __overlayShow(true);
-                            __notifyShow(errorThrown, 'error')
+                            __notifyShow(errorThrown, 'error');
                         }
                     });
                 }
@@ -274,7 +289,7 @@
                 };
 
                 window.__onExport = function() {
-                    window.open(window.location.href + '/export?' + __searchForm.getForm().serialize());
+                    window.open(window.location.origin + window.location.pathname + '/export?' + __searchForm.getForm().serialize());
                 };
 
                 <#if (_columnKeys?seq_contains('status'))>
@@ -292,10 +307,16 @@
                                             id: param
                                         },
                                         success: function (data, textStatus, jqXHR) {
-                                            __doChangePageQuery(__tables.getCurrentPageNumber());
+                                            if (data && data.ret === 0) {
+                                                __notifyShow('操作成功！', 'success');
+                                                __doChangePageQuery(__tables.getCurrentPageNumber());
+                                            } else {
+                                                __notifyShow(data.msg, 'error');
+                                            }
                                         },
                                         error: function (XMLHttpRequest, textStatus, errorThrown) {
                                             console.log(errorThrown);
+                                            __notifyShow(errorThrown, 'error');
                                         }
                                     });
                                 }
