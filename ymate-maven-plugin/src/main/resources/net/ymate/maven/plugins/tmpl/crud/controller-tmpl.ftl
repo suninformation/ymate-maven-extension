@@ -10,6 +10,7 @@ import net.ymate.module.security.annotation.RoleType;
 import net.ymate.module.security.annotation.Security;</#if>
 import net.ymate.platform.core.beans.annotation.*;
 import net.ymate.platform.persistence.IResultSet;
+import net.ymate.platform.persistence.Page;
 import net.ymate.platform.validation.annotation.*;
 import net.ymate.platform.validation.validate.*;
 import net.ymate.platform.webmvc.annotation.*;<#if upload>
@@ -75,9 +76,7 @@ public class ${api.name?cap_first}Controller {
      * @throws Exception 可能产生的任何异常
      */
     @RequestMapping("/query")<#if withDoc>
-    @ApiAction(value = "查询", mapping = "${api.mapping}/query",
-            notes = "注意：若省略条件和分页参数调用查询接口，将返回全部数据，存在安全隐患！",
-            description = "根据条件查询<#if api.description?? && (api.description?length > 0)>${api.description}</#if>数据，多个条件参数间采用与操作；支持分页查询，若页码参数值为0则表示不分页。", httpMethod = "GET")</#if><#if security?? && security.enabled>
+    @ApiAction(value = "查询", mapping = "${api.mapping}/query", description = "根据条件查询<#if api.description?? && (api.description?length > 0)>${api.description}</#if>数据，多个条件参数间采用与操作；支持分页查询，若页码参数值为0则表示查询第1页。", httpMethod = "GET")</#if><#if security?? && security.enabled>
     @Permission("${security.prefix}${api.name?upper_case}_QUERY")<#if withDoc>
     @ApiSecurity(roles = @ApiRole(name = "ADMIN", description = "管理员"), value = @ApiPermission(name = "${security.prefix}${api.name?upper_case}_QUERY", description = "<#if api.description?? && (api.description?length > 0)>- ${api.description}</#if>查询"))</#if></#if>
     public IView __query(<#if api.primary.filter?? && api.primary.filter.enabled><#if withDoc>@ApiParam("<#if api.primary.label?? && (api.primary.label?length > 0)>${api.primary.label}</#if>") </#if>@VRequired<#if api.primary.validation??><#if api.primary.validation.numeric?? && api.primary.validation.numeric>
@@ -110,9 +109,9 @@ public class ${api.name?cap_first}Controller {
 
                          </#if></#if></#list></#if>, </#if>
 
-                         <#if withDoc>@ApiParam(value = "查询页号") </#if>@VNumeric @RequestParam int page, <#if withDoc>@ApiParam(value = "每页记录数") </#if>@VNumeric @RequestParam int pageSize) throws Exception {
+                         <#if withDoc>@ApiParam(value = "查询页号") </#if>@VNumeric @RequestParam int page, <#if withDoc>@ApiParam(name = "page_size", value = "每页记录数") </#if>@VNumeric(max = 50) @RequestParam("page_size") int pageSize) throws Exception {
 
-    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, __fields, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>__fields, null</#if>, page, pageSize);
+    IResultSet<<#if query>Object[]<#else>${api.model}</#if>> _result = __repository.find(<#if api.primary.filter?? && api.primary.filter.enabled>${api.primary.name}, </#if><#if formbean><#if (repositoryFormBean)>${api.name}Form<#else><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>${api.name}Form.getBegin${p.name?cap_first}()<#else>${api.name}Form.get${p.name?cap_first}()</#if><#if p.filter.region>, ${api.name}Form.getEnd${p.name?cap_first}()</#if><#if p_has_next>, </#if></#if></#list></#if>, __fields, null<#else><#if (api.params?? && api.params?size > 0)><#list api.params as p><#if p.filter?? && p.filter.enabled><#if p.filter.region>begin${p.name?cap_first}<#else>${p.name}</#if><#if p.filter.region>, end${p.name?cap_first}</#if><#if p_has_next>, </#if></#if></#list>, </#if>__fields, null</#if>, page <= 0 ? 1 : page, pageSize <= 0 ? Page.DEFAULT_PAGE_SIZE : pageSize);
     //
     return WebResult.succeed().data(_result).toJSON();
     }
