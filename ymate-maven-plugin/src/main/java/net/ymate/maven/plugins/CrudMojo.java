@@ -73,12 +73,15 @@ public class CrudMojo extends AbstractTmplMojo {
     @Parameter(property = "mapping", defaultValue = "v1")
     private String mapping;
 
+    @Parameter(property = "package")
+    private String packageName;
+
     public void execute() throws MojoExecutionException, MojoFailureException {
         File _cfgFile = new File(basedir, fileName);
         try {
             if (_cfgFile.exists() && _cfgFile.isFile()) {
                 ApplicationInfo _application = JSON.parseObject(new FileInputStream(_cfgFile), ApplicationInfo.class, Feature.OrderedField);
-                _application.checkDefaultValue(basedir, packageBase, projectName, version);
+                _application.checkDefaultValue(basedir, StringUtils.defaultIfBlank(packageName, packageBase), projectName, version);
                 //
                 if (_application.isLocked()) {
                     getLog().info("CRUD has been locked.");
@@ -199,7 +202,7 @@ public class CrudMojo extends AbstractTmplMojo {
             } else {
                 Map<String, Object> _props = new HashMap<String, Object>();
                 _props.put("projectName", projectName);
-                _props.put("packageName", packageBase);
+                _props.put("packageName", StringUtils.defaultIfBlank(packageName, packageBase));
                 _props.put("version", version);
                 //
                 if (fromDb) {
@@ -243,7 +246,7 @@ public class CrudMojo extends AbstractTmplMojo {
                         //
                         _info.setName(StringUtils.uncapitalize(_name.getKey()));
                         _info.setMapping("/" + mapping + "/" + EntityMeta.fieldNameToPropertyName(_info.getName(), 0).replace('_', '/'));
-                        _info.setModel(packageBase + ".model." + _name.getKey() + (_config.isUseClassSuffix() ? "Model" : ""));
+                        _info.setModel(StringUtils.defaultIfBlank(packageName, packageBase) + ".model." + _name.getKey() + (_config.isUseClassSuffix() ? "Model" : ""));
                         _info.setQuery("");
                         _info.setLocked(false);
                         _info.setTimestamp(_tableInfo.getFieldMap().containsKey("create_time"));

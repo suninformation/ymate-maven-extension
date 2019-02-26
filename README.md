@@ -1021,6 +1021,7 @@
     |repositoryWithoutFormBean|否|是否禁止存储器使用JavaBean封装参数，默认值：`false`|
     |withDoc|否|是否生成API文档注解，默认值：`false`|
     |mapping|否|指定生成的控制器基准`RequestMapping`路径，默认值：`空`|
+    |package|否|指定生成类包名，默认值：`${project.groupId}`|
 
 - 命令示例：
 
