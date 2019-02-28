@@ -138,7 +138,9 @@
                                 {name: "修改", fn: "Edit", param: row.id, type: "default", icon: "edit"},
                                 {name: "详情", fn: "Detail", param: row.id, type: "default", icon: "file-text-o"},
                                 <#if (_columnKeys?seq_contains('status'))>
-                                {name: row.status === 1 ? "启用" : "禁用", fn: "Status", param: row.id},
+                                <#list _status as p>
+                                <#if p.enabled>{name: "<#if (p.description?? && p.description?length > 0)>${p.description}<#else>${p.name}</#if>", fn: "Status${p.name?cap_first}", param: row.id},</#if>
+                                </#list>
                                 {name: "-"},
                                 </#if>
                                 {name: "删除", fn: "Remove", param: row.id, icon: "trash"}
@@ -293,14 +295,14 @@
                 };
 
                 <#if (_columnKeys?seq_contains('status'))>
-                window.__onStatus = function(param) {
-                    if (param) {
+                function __doStatus(param, status) {
+                    if (param && status) {
                         var _item = __tables.findItem(param);
                         if (_item) {
                             __confirmShow({
                                 ok: function () {
                                     $.requestSender({
-                                        url: '${_pagePath}${_mapping}/status/' + (_item.status === 1 ? 'enable' : 'disable'),
+                                        url: '${_pagePath}${_mapping}/status/' + status,
                                         type: 'POST',
                                         timeout: 0,
                                         data: {
@@ -325,7 +327,16 @@
                             __notifyShow('请选择一条要操作的记录！', 'warning');
                         }
                     }
+                }
+
+                <#list _status as p>
+                    <#if p.enabled>
+                window.__onStatus${p.name?cap_first} = function(param) {
+                    __doStatus(param, '${p.name?lower_case}');
                 };
+
+                    </#if>
+                </#list>
                 </#if>
 
                 $('[data-toggle="tooltip"]').tooltip();

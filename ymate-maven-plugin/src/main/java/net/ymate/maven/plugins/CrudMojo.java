@@ -117,6 +117,7 @@ public class CrudMojo extends AbstractTmplMojo {
                                 _props.put("_columnKeys", _columnKeys);
                                 _props.put("_name", _api.getName());
                                 _props.put("_description", _api.getDescription());
+                                _props.put("_status", _api.getStatus());
                                 //
                                 String _mapping = _api.getMapping().charAt(0) == '/' ? _api.getMapping().substring(1) : _api.getMapping();
                                 String[] _mappingArr = StringUtils.split(_mapping, "/");
@@ -266,8 +267,8 @@ public class CrudMojo extends AbstractTmplMojo {
                                         _params.add(_parameter);
                                         //
                                         if (StringUtils.equalsIgnoreCase(_column.getColumnName(), "status")) {
-                                            _status.add(new StatusInfo("enabled", _parameter.getColumn(), _parameter.getType(), "0", false, "Set the status value to enabled."));
-                                            _status.add(new StatusInfo("disabled", _parameter.getColumn(), _parameter.getType(), "1", true, "Set the status value to disable."));
+                                            _status.add(new StatusInfo("enabled", _parameter.getColumn(), _parameter.getType(), "0", false, "Enabled"));
+                                            _status.add(new StatusInfo("disabled", _parameter.getColumn(), _parameter.getType(), "1", true, "Disabled"));
                                         }
                                     }
                                 }
