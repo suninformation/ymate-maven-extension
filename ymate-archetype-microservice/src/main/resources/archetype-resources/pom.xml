@@ -22,10 +22,10 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ymate.platform.version>2.0.6</ymate.platform.version>
-        <ymate.framework.version>2.0.6</ymate.framework.version>
+        <ymate.platform.version>2.0.7</ymate.platform.version>
+        <ymate.framework.version>2.0.7</ymate.framework.version>
         <ymate.port.version>1.0-SNAPSHOT</ymate.port.version>
-        <tomcat.version>7.0.92</tomcat.version>
+        <tomcat.version>7.0.94</tomcat.version>
     </properties>
 
     <build>
